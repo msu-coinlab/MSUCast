@@ -20,6 +20,10 @@ class Scenario {
         size_t compute_animal_size();
         size_t compute_manure_size();
         int compute_ef();
+
+        size_t get_ef_size() {
+            return ef_size_;
+        }
         size_t get_lc_size() {
             return lc_size_;
         }

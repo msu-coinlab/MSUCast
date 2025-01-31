@@ -439,13 +439,15 @@ void PSO::init_cast(const std::string& input_filename, const std::string& scenar
     misc_utilities::mkdir(emo_path);
 
     scenario_.init(input_filename, scenario_filename, is_ef_enabled_, is_lc_enabled_, is_animal_enabled_, is_manure_enabled_, manure_nutrients_file);
+    ef_size_ = scenario_.get_ef_size();
+    fmt::print("ef_size: {}\n", ef_size_);
     lc_size_ = scenario_.get_lc_size();
     fmt::print("lc_size: {}\n", lc_size_);
     animal_size_ = scenario_.get_animal_size();
     fmt::print("animal_size: {}\n", animal_size_);
     manure_size_ = scenario_.get_manure_size();
     fmt::print("manure_size: {}\n", manure_size_);
-    dim = lc_size_ + animal_size_ + manure_size_;
+    dim = lc_size_ + animal_size_ + manure_size_ + ef_size_;
     fmt::print("dim: {}\n", dim);
     nobjs = 2;
 }
