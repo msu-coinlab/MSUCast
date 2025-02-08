@@ -3,10 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
 #include "global.h"
 
-/* Function to allocate memory to a population */
+/**
+ * @brief Allocates memory to a population.
+ * @param pop The population pointer.
+ * @param size The size of the population.
+ */
 void allocate_memory_pop(population *pop, int size)
 {
     int i;
@@ -18,7 +21,10 @@ void allocate_memory_pop(population *pop, int size)
     return;
 }
 
-/* Function to allocate memory to an individual */
+/**
+ * @brief Allocates memory to an individual.
+ * @param ind The individual pointer.
+ */
 void allocate_memory_ind(individual *ind)
 {
     int j;
@@ -43,7 +49,11 @@ void allocate_memory_ind(individual *ind)
     return;
 }
 
-/* Function to deallocate memory to a population */
+/**
+ * @brief Deallocates memory for a population.
+ * @param pop The population pointer.
+ * @param size The size of the population.
+ */
 void deallocate_memory_pop(population *pop, int size)
 {
     int i;
@@ -55,7 +65,10 @@ void deallocate_memory_pop(population *pop, int size)
     return;
 }
 
-/* Function to deallocate memory to an individual */
+/**
+ * @brief Deallocates memory for an individual.
+ * @param ind The individual pointer.
+ */
 void deallocate_memory_ind(individual *ind)
 {
     int j;

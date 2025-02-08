@@ -5,7 +5,6 @@
 #include "misc_utilities.h"
 #include <iostream>
 #include <string>
-
 #include <thread>
 #include <chrono>
 #include <mutex>
@@ -23,22 +22,33 @@ namespace {
     std::string REDIS_PORT = misc_utilities::get_env_var("REDIS_PORT", "6379");
     std::string REDIS_DB_OPT = misc_utilities::get_env_var("REDIS_DB_OPT", "1");
     std::string REDIS_URL = fmt::format("tcp://{}:{}/{}", REDIS_HOST, REDIS_PORT, REDIS_DB_OPT);
-
 }
 
 // Mutex and condition variable for synchronizing threads
 std::mutex mtx;
 std::condition_variable cv;
 
+/**
+ * @brief Constructor with EMO data and UUID initialization.
+ * @param emo_data The EMO data to be used.
+ * @param emo_uuid The UUID for the EMO process.
+ */
 RabbitMQClient::RabbitMQClient(std::string emo_data, std::string emo_uuid) : redis_(REDIS_URL) {
     init(emo_data, emo_uuid);
 }
 
+/**
+ * @brief Default constructor.
+ */
 RabbitMQClient::RabbitMQClient(): redis_(REDIS_URL) {
     is_initialized = false;
-
 }
 
+/**
+ * @brief Initializes the client with EMO data and UUID.
+ * @param emo_data The EMO data.
+ * @param emo_uuid The EMO UUID.
+ */
 void RabbitMQClient::init(std::string emo_data, std::string emo_uuid) {
     get_opts();
     emo_data_= emo_data;
@@ -47,16 +57,27 @@ void RabbitMQClient::init(std::string emo_data, std::string emo_uuid) {
     is_initialized = true;
 }
 
+/**
+ * @brief Checks initialization status.
+ * @return True if initialized, false otherwise.
+ */
 bool RabbitMQClient::is_init() {
     return is_initialized;
 }
 
+/**
+ * @brief Destructor for cleanup.
+ */
 RabbitMQClient::~RabbitMQClient() {
     redis_.hdel("emo_data", emo_uuid_);
     if(redis_.exists(emo_uuid_)) {
         redis_.del(emo_uuid_);
     }
 }
+
+/**
+ * @brief Sets up AMQP connection options.
+ */
 void RabbitMQClient::get_opts() {
     opts_.host = AMQP_HOST.c_str();
     opts_.port = std::stoi(AMQP_PORT);
@@ -65,13 +86,18 @@ void RabbitMQClient::get_opts() {
     opts_.auth = AmqpClient::Channel::OpenOpts::BasicAuth(AMQP_USERNAME, AMQP_PASSWORD);
 }
 
+/**
+ * @brief Sends a message through RabbitMQ.
+ * @param routing_name The routing key.
+ * @param msg The message to send.
+ * @return True if successful.
+ */
 bool RabbitMQClient::send_message(std::string routing_name, std::string msg) {
     try {
         auto channel = AmqpClient::Channel::Open(opts_);
         channel->DeclareExchange(EXCHANGE_NAME, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, false, true, false);
         auto message = AmqpClient::BasicMessage::Create(msg);
         channel->BasicPublish(EXCHANGE_NAME, routing_name, message, false, false);
-        //channel->reset()
     }
     catch (const std::exception &error) {
         std::clog << "error\n" << error.what() << "\n";
@@ -80,10 +106,13 @@ bool RabbitMQClient::send_message(std::string routing_name, std::string msg) {
     return true;
 }
 
+/**
+ * @brief Sends execution signal.
+ * @param exec_uuid The execution UUID.
+ */
 void RabbitMQClient::send_signal(std::string exec_uuid) {
     redis_.hset("emo_data", exec_uuid, emo_data_);
     auto scenario_id = *redis_.lpop("scenario_ids");
-    //std::cout<<"Current Scenario ID: "<<scenario_id<<std::endl;
     redis_.hset("solution_to_execute_dict", exec_uuid, fmt::format("{}_{}", emo_uuid_, scenario_id));
     try {
         auto msg = exec_uuid;
@@ -96,19 +125,23 @@ void RabbitMQClient::send_signal(std::string exec_uuid) {
     }
 }
 
+/**
+ * @brief Waits for execution results.
+ * @return The execution results as a string.
+ */
 std::string RabbitMQClient::wait_for_data() {
     std::string exec_results_str;
     auto channel = AmqpClient::Channel::Open(opts_);
-    auto passive = false; //meaning you want the server to create the exchange if it does not already exist.
-    auto durable = true; //meaning the exchange will survive a broker restart
-    auto auto_delete = false; //meaning the queue will not be deleted once the channel is closed
+    auto passive = false;
+    auto durable = true;
+    auto auto_delete = false;
     channel->DeclareExchange(EXCHANGE_NAME, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, passive, durable, auto_delete);
     auto generate_queue_name ="";
-    auto exclusive = false; //meaning the queue can be accessed in other channels
+    auto exclusive = false;
     auto queue_name = channel->DeclareQueue(generate_queue_name, passive, durable, exclusive, auto_delete);
     channel->BindQueue(queue_name, EXCHANGE_NAME, emo_uuid_);
-    auto no_local = false; 
-    auto no_ack = true; //meaning the server will expect an acknowledgement of messages delivered to the consumer
+    auto no_local = false;
+    auto no_ack = true;
     auto message_prefetch_count = 1;
     auto consumer_tag = channel->BasicConsume(queue_name, generate_queue_name, no_local, no_ack, exclusive, message_prefetch_count);
     fmt::print("[*] Waiting for execution service: {} \n", emo_uuid_);
@@ -122,35 +155,34 @@ std::string RabbitMQClient::wait_for_data() {
         exec_results_str = *redis_.hget("executed_results", received_exec_uuid);
         auto scenario_id = sent_list_[received_exec_uuid];
         sent_list_.erase(received_exec_uuid);
-        //redis_.lpush("scenario_ids", scenario_id);
         redis_.hdel("executed_results", received_exec_uuid);
         redis_.hdel("emo_data", received_exec_uuid);
     }
 
-
     return exec_results_str;
 }
 
+/**
+ * @brief Waits for all execution results.
+ * @return Vector of execution results.
+ */
 std::vector<std::string> RabbitMQClient::wait_for_all_data() {
-
     std::vector<std::string> exec_results_str_all;
     auto channel = AmqpClient::Channel::Open(opts_);
-    auto passive = false; //meaning you want the server to create the exchange if it does not already exist.
-    auto durable = true; //meaning the exchange will survive a broker restart
-    auto auto_delete = false; //meaning the queue will not be deleted once the channel is closed
+    auto passive = false;
+    auto durable = true;
+    auto auto_delete = false;
     channel->DeclareExchange(EXCHANGE_NAME, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, passive, durable, auto_delete);
     auto generate_queue_name ="";
-    auto exclusive = false; //meaning the queue can be accessed in other channels
+    auto exclusive = false;
     auto queue_name = channel->DeclareQueue(generate_queue_name, passive, durable, exclusive, auto_delete);
     channel->BindQueue(queue_name, EXCHANGE_NAME, emo_uuid_);
-    auto no_local = false; 
-    auto no_ack = true; //meaning the server will expect an acknowledgement of messages delivered to the consumer
+    auto no_local = false;
+    auto no_ack = true;
     auto message_prefetch_count = 1;
     auto consumer_tag = channel->BasicConsume(queue_name, generate_queue_name, no_local, no_ack, exclusive, message_prefetch_count);
 
-
     while(sent_list_.size() > 0) {
-
         fmt::print("Remaining scenarios: {}\n", sent_list_.size());
         fmt::print("[*] Waiting for execution service: {} \n", emo_uuid_);
 
@@ -161,65 +193,71 @@ std::vector<std::string> RabbitMQClient::wait_for_all_data() {
         fmt::print("Received: {}\n", received_exec_uuid);
 
         if (routing_key == emo_uuid_) {
-            
             std::string exec_results_str = *redis_.hget("executed_results", received_exec_uuid);
             std::vector<std::string> to_return = {received_exec_uuid, exec_results_str};
             exec_results_str_all.push_back(fmt::format("{}_{}", received_exec_uuid, exec_results_str));
             auto scenario_id = sent_list_[received_exec_uuid];
             sent_list_.erase(received_exec_uuid);
-            //redis_.lpush("scenario_ids", scenario_id);
             redis_.hdel("executed_results", received_exec_uuid);
             redis_.hdel("emo_data", received_exec_uuid);
         }
     }
 
-
     return exec_results_str_all;
 }
 
-
-
+/**
+ * @brief Gets remaining transfer count.
+ * @return Number of remaining transfers.
+ */
 int RabbitMQClient::transfers_remaining() {
     return sent_list_.size();
 }
 
+/**
+ * @brief Consumes messages with timeout.
+ * @param channel AMQP channel.
+ * @param consumer_tag Consumer tag.
+ * @param timeout_ms Timeout in milliseconds.
+ */
 void consume_with_timeout(AmqpClient::Channel::ptr_t channel, const std::string& consumer_tag, int timeout_ms) {
     std::string received_exec_uuid;
     std::string routing_key;
     AmqpClient::Envelope::ptr_t envelope;
     {
         std::unique_lock<std::mutex> lock(mtx);
-        // Wait for a message or timeout
         if (cv.wait_for(lock, std::chrono::milliseconds(timeout_ms), [&](){ return channel->BasicConsumeMessage(consumer_tag, envelope); })) {
             auto message_payload = envelope->Message()->Body();
             routing_key = envelope->RoutingKey();
             received_exec_uuid = message_payload;
             fmt::print("Received: {}\n", received_exec_uuid);
-
         } else {
             std::cout << "Timeout reached, no message received within " << timeout_ms << " milliseconds." << std::endl;
         }
     }
 }
 
+/**
+ * @brief Safely waits for all data with timeout handling.
+ * @return Vector of execution results.
+ */
 std::vector<std::string> RabbitMQClient::safe_wait_for_all_data() {
     std::vector<std::string> exec_results_str_all;
     auto channel = AmqpClient::Channel::Open(opts_);
-    auto passive = false; //meaning you want the server to create the exchange if it does not already exist.
-    auto durable = true; //meaning the exchange will survive a broker restart
-    auto auto_delete = false; //meaning the queue will not be deleted once the channel is closed
+    auto passive = false;
+    auto durable = true;
+    auto auto_delete = false;
     channel->DeclareExchange(EXCHANGE_NAME, AmqpClient::Channel::EXCHANGE_TYPE_DIRECT, passive, durable, auto_delete);
     auto generate_queue_name ="";
-    auto exclusive = false; //meaning the queue can be accessed in other channels
+    auto exclusive = false;
     auto queue_name = channel->DeclareQueue(generate_queue_name, passive, durable, exclusive, auto_delete);
     channel->BindQueue(queue_name, EXCHANGE_NAME, emo_uuid_);
-    auto no_local = false; 
-    auto no_ack = false; //meaning the server will expect an acknowledgement of messages delivered to the consumer
+    auto no_local = false;
+    auto no_ack = false;
     auto message_prefetch_count = 1;
     auto consumer_tag = channel->BasicConsume(queue_name, generate_queue_name, no_local, no_ack, exclusive, message_prefetch_count);
 
     while(sent_list_.size() > 0) {
-
         fmt::print("Remaining scenarios: {}\n", sent_list_.size());
         fmt::print("[*] Waiting for execution service: {} \n", emo_uuid_);
 
@@ -234,18 +272,15 @@ std::vector<std::string> RabbitMQClient::safe_wait_for_all_data() {
         fmt::print("Received: {}\n", received_exec_uuid);
 
         if (routing_key == emo_uuid_) {
-            
             std::string exec_results_str = *redis_.hget("executed_results", received_exec_uuid);
             std::vector<std::string> to_return = {received_exec_uuid, exec_results_str};
             exec_results_str_all.push_back(fmt::format("{}_{}", received_exec_uuid, exec_results_str));
             auto scenario_id = sent_list_[received_exec_uuid];
             sent_list_.erase(received_exec_uuid);
-            //redis_.lpush("scenario_ids", scenario_id);
             redis_.hdel("executed_results", received_exec_uuid);
             redis_.hdel("emo_data", received_exec_uuid);
         }
     }
-
 
     return exec_results_str_all;
 }

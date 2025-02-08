@@ -1,5 +1,3 @@
-/* Definition of random number generation routines */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -11,7 +9,12 @@ double seed;
 double oldrand[55];
 int jrand;
 
-/* Get seed number for random and start it up */
+/**
+ * @brief Initializes the random number generator.
+ *
+ * This function sets the initial state of the random number generator by
+ * resetting the old random numbers and calling the warmup function.
+ */
 void randomize()
 {
     int j1;
@@ -24,7 +27,14 @@ void randomize()
     return;
 }
 
-/* Get randomize off and running */
+/**
+ * @brief Prepares the random number generator with a seed.
+ *
+ * This function initializes the random number generator using the provided seed
+ * and generates the first batch of random numbers.
+ *
+ * @param seed The seed value to initialize the random number generator.
+ */
 void warmup_random(double seed)
 {
     int j1, ii;
@@ -50,7 +60,12 @@ void warmup_random(double seed)
     return;
 }
 
-/* Create next batch of 55 random numbers */
+/**
+ * @brief Advances the random number generator to create the next batch of random numbers.
+ *
+ * This function updates the state of the random number generator by generating
+ * the next set of random numbers based on the current state.
+ */
 void advance_random()
 {
     int j1;
@@ -75,7 +90,13 @@ void advance_random()
     }
 }
 
-/* Fetch a single random number between 0.0 and 1.0 */
+/**
+ * @brief Fetches a single random number between 0.0 and 1.0.
+ *
+ * This function returns a random number from the uniform distribution in the range [0.0, 1.0].
+ *
+ * @return A random number between 0.0 and 1.0.
+ */
 double randomperc()
 {
     jrand++;
@@ -87,7 +108,15 @@ double randomperc()
     return ((double)oldrand[jrand]);
 }
 
-/* Fetch a single random integer between low and high including the bounds */
+/**
+ * @brief Fetches a single random integer between low and high (inclusive).
+ *
+ * This function returns a random integer within the specified bounds.
+ *
+ * @param low The lower bound (inclusive).
+ * @param high The upper bound (inclusive).
+ * @return A random integer between low and high.
+ */
 int rnd(int low, int high)
 {
     int res;
@@ -106,7 +135,15 @@ int rnd(int low, int high)
     return (res);
 }
 
-/* Fetch a single random real number between low and high including the bounds */
+/**
+ * @brief Fetches a single random real number between low and high (inclusive).
+ *
+ * This function returns a random real number within the specified bounds.
+ *
+ * @param low The lower bound (inclusive).
+ * @param high The upper bound (inclusive).
+ * @return A random real number between low and high.
+ */
 double rndreal(double low, double high)
 {
     return (low + (high - low) * randomperc());

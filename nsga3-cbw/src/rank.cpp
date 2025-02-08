@@ -1,5 +1,3 @@
-/* Rank assignment routine */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -7,7 +5,13 @@
 #include "global.h"
 #include "rand.h"
 
-/* Function to assign rank size pop_size*/
+/**
+ * @brief Assigns ranks to individuals in the population.
+ *
+ * This function assigns ranks to individuals based on their dominance relationships.
+ *
+ * @param new_pop Pointer to the population structure containing individuals to be ranked.
+ */
 void assign_rank(population *new_pop)
 {
     int flag;
@@ -97,7 +101,13 @@ void assign_rank(population *new_pop)
     return;
 }
 
-/* Function to assign rank size 2*pop_size*/
+/**
+ * @brief Assigns ranks to individuals in a mixed population.
+ *
+ * This function assigns ranks to individuals based on their dominance relationships in a mixed population.
+ *
+ * @param new_pop Pointer to the population structure containing individuals to be ranked.
+ */
 void assign_rank_mixedpop(population *new_pop)
 {
     int flag;

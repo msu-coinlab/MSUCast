@@ -13,14 +13,23 @@
 
 namespace fs = std::filesystem;
 
-EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast){ 
+/**
+ * @brief Constructor for the EpsConstraint class.
+ * 
+ * @param base_scenario_json The base scenario JSON object.
+ * @param scenario_json The scenario JSON object.
+ * @param path_out The output path.
+ * @param pollutant_idx The pollutant index.
+ * @param evaluate_cast Whether to evaluate the cast.
+ */
+EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast) {
     path_out_ = path_out;
     // Check if the directory exists
     if (!fs::exists(path_out)) {
         // Create the directory and any necessary parent directories
         try {
-            if (fs::create_directories(path_out)==false) {
-                std::cout << "Directory already exists or cannot be created: " << path_out<< std::endl;
+            if (fs::create_directories(path_out) == false) {
+                std::cout << "Directory already exists or cannot be created: " << path_out << std::endl;
             }
         } catch (fs::filesystem_error& e) {
             std::cerr << e.what() << std::endl;
@@ -32,7 +41,14 @@ EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenari
     app = IpoptApplicationFactory();
 }
 
-bool EpsConstraint::evaluate(double reduction, int current_iteration=0) {
+/**
+ * @brief Evaluates the constraint.
+ * 
+ * @param reduction The reduction value.
+ * @param current_iteration The current iteration.
+ * @return bool Whether the evaluation was successful.
+ */
+bool EpsConstraint::evaluate(double reduction, int current_iteration = 0) {
     //app->Options()->SetNumericValue("tol", 1e-8);
     int desired_verbosity_level = 1;
     std::string log_filename = fmt::format("{}/ipopt.out", path_out_);
@@ -49,7 +65,7 @@ bool EpsConstraint::evaluate(double reduction, int current_iteration=0) {
     status = app->Initialize();
     if (status != Solve_Succeeded) {
         std::cout << std::endl << std::endl << "*** Error during initialization!" << std::endl;
-        return (int) status;
+        return (int)status;
     }
 
     status = app->OptimizeTNLP(mynlp);
@@ -57,8 +73,16 @@ bool EpsConstraint::evaluate(double reduction, int current_iteration=0) {
     return status;
 }
 
-
-bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path){
+/**
+ * @brief Evaluates the constraint for multiple steps.
+ * 
+ * @param reduction The reduction value.
+ * @param nsteps The number of steps.
+ * @param uuids The list of UUIDs.
+ * @param parent_uuid_path The parent UUID path.
+ * @return bool Whether the evaluation was successful.
+ */
+bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path) {
     fmt::print("**************************************** \n");
     fmt::print("In constr_eval\n");
     fmt::print("**************************************** \n");
@@ -66,50 +90,36 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
     auto uuid = mynlp->get_uuid();
     fmt::print("eps-uuid: {}\n", uuid);
 
-
     auto scenario_data = mynlp->get_scenario_data();
 
-
-    double step_size = (double)reduction/nsteps;
+    double step_size = (double)reduction / nsteps;
     auto base_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", uuid);
     misc_utilities::mkdir(fmt::format("{}/ipopt_tmp", base_path));
-    //auto [parent_path_part, parent_uuid_part] = misc_utilities::extract_path_and_id(parent_uuid_path);
-    //I want to have a dictionary with a uuid as key, and an integer (i) as value;
-
-    misc_utilities::mkdir(fmt::format("{}/ipopt_tmp", base_path));
-    for (int i(0); i< nsteps; ++i) {
-        double lower_bound = step_size*(i+1);
+    
+    for (int i(0); i < nsteps; ++i) {
+        double lower_bound = step_size * (i + 1);
         auto result = evaluate(lower_bound, i);
         fmt::print("Result: {}\n", result);
 
-        //copy the files from the parent_uuid_path to the base_path 
+        // Copy the files from the parent_uuid_path to the base_path 
         auto [parent_path, parent_uuid] = misc_utilities::extract_path_and_id(parent_uuid_path);
         misc_utilities::copy_prefix_in_to_prefix_out(parent_path, base_path, parent_uuid, uuids[i]);
-        //merge eps-constr's impbmpsubmittedland.parquet, impbmpsubmittedland.json and costs.json with parent's
-
+        
+        // Merge eps-constr's impbmpsubmittedland.parquet, impbmpsubmittedland.json and costs.json with parent's
         auto parent_land_path = fmt::format("{}_impbmpsubmittedland.parquet", parent_uuid_path);
-        auto current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
+        auto current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i, "impbmpsubmittedland.parquet");
         auto dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", base_path, uuids[i]);
 
-
-        std::vector<std::tuple<int, int, int, int, int, int, double> > parent_land = mynlp->read_land(parent_land_path);
-        std::vector<std::tuple<int, int, int, int, int, int, double> >  current_land = mynlp->read_land(current_land_path);
+        std::vector<std::tuple<int, int, int, int, int, int, double>> parent_land = mynlp->read_land(parent_land_path);
+        std::vector<std::tuple<int, int, int, int, int, int, double>> current_land = mynlp->read_land(current_land_path);
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
         auto parent_land_json_path = fmt::format("{}_impbmpsubmittedland.json", parent_uuid_path);
-        auto current_land_json_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.json");
+        auto current_land_json_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i, "impbmpsubmittedland.json");
         auto dst_land_json_path = fmt::format("{}/{}_impbmpsubmittedland.json", base_path, uuids[i]);
 
-        /*
-        json parent_land_json = misc_utilities::read_json_file(parent_land_json_path);
-        json current_land_json = misc_utilities::read_json_file(current_land_json_path);
-        */
-
-
-        misc_utilities::merge_json_files(current_land_json_path,
-                        parent_land_json_path, 
-                        dst_land_json_path);
+        misc_utilities::merge_json_files(current_land_json_path, parent_land_json_path, dst_land_json_path);
 
         auto current_cost_path = fmt::format("{}/ipopt_tmp/{}_costs.json", base_path, i);
         auto parent_cost_path = fmt::format("{}_costs.json", parent_uuid_path);
@@ -121,21 +131,25 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         if (current_cost_json.contains("ef_cost")) {
             parent_cost_json["ef_cost"] = current_cost_json["ef_cost"];
         }
-                
+
         misc_utilities::write_json_file(dst_cost_path, parent_cost_json);
-        
     }
 
-    if(evaluate_cast_) {
+    if (evaluate_cast_) {
         send_files(scenario_data, uuid, uuids);
     }
     return true;
 }
 
-
-std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_data, const std::string& uuid, const std::vector<std::string>& uuids) {
-    
-
+/**
+ * @brief Sends files to the RabbitMQ server.
+ * 
+ * @param scenario_data The scenario data.
+ * @param uuid The UUID.
+ * @param uuids The list of UUIDs.
+ * @return std::vector<std::string> The list of output strings.
+ */
+std::vector<std::string> EpsConstraint::send_files(const std::string& scenario_data, const std::string& uuid, const std::vector<std::string>& uuids) {
     RabbitMQClient rabbit(scenario_data, uuid);
     fmt::print("senario_data: {} {}\n", scenario_data, uuid);
 
@@ -150,12 +164,12 @@ std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_
     std::unordered_map<std::string, int> uuids_map;
 
     for (const auto& exec_uuid : uuids) {
-        misc_utilities::copy_prefix_in_to_prefix_out(base_path, path_out_, uuids[i], fmt::format("{}",i));
+        misc_utilities::copy_prefix_in_to_prefix_out(base_path, path_out_, uuids[i], fmt::format("{}", i));
         uuids_map[exec_uuid] = i;
         i++;
     }
 
-    for (const auto& output_str: output_rabbit) {
+    for (const auto& output_str : output_rabbit) {
         std::vector<std::string> output_tmp;
         misc_utilities::split_str(output_str, '_', output_tmp);
         fmt::print("output_str: {}\n", output_str);
@@ -177,12 +191,11 @@ std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_
 
         // Calculate the total cost
         output_json["cost"] = output_json["ef_cost"].get<double>() + output_json["lc_cost"].get<double>() + output_json["animal_cost"].get<double>() + output_json["manure_cost"].get<double>();
-        output_json["i"] = i; 
+        output_json["i"] = i;
 
         auto dst_cost_file = fmt::format("{}/{}_costs.json", path_out_, i);
         misc_utilities::write_json_file(dst_cost_file, output_json);
     }
-
 
     nlohmann::json j;
     j["output"] = output_rabbit;
@@ -203,3 +216,20 @@ std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_
     return output_rabbit;
 }
 
+// Example usage:
+// int main() {
+//     // Create a new EpsConstraint object
+//     EpsConstraint eps_constraint(base_scenario_json, scenario_json, "/path/to/output", 0, true);
+
+//     // Evaluate the constraint
+//     bool result = eps_constraint.evaluate(0.5);
+
+//     // Evaluate the constraint for multiple steps
+//     std::vector<std::string> uuids = {"uuid1", "uuid2", "uuid3"};
+//     bool result2 = eps_constraint.constr_eval(0.5, 3, uuids, "/path/to/parent_uuid");
+
+//     // Send files to the RabbitMQ server
+//     std::vector<std::string> output = eps_constraint.send_files(scenario_data, uuid, uuids);
+
+//     return 0;
+// }

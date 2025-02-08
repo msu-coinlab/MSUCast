@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "tuple": "cpp",
+        "vector": "cpp",
+        "functional": "cpp",
+        "xlocale": "cpp",
+        "fstream": "cpp",
+        "deque": "cpp",
+        "format": "cpp",
+        "list": "cpp",
+        "xstring": "cpp"
+    }
+}

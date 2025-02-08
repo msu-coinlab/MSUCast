@@ -3,98 +3,113 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
 #include "global.h"
 #include "rand.h"
 
-/* Function to return the maximum of two variables */
+/**
+ * @brief Function to return the maximum of two variables.
+ * @param a The first variable.
+ * @param b The second variable.
+ * @return The maximum of the two variables.
+ */
 double maximum(double a, double b)
 {
-   if (a > b)
-   {
-      return (a);
-   }
-   return (b);
+    if (a > b)
+    {
+        return a;
+    }
+    return b;
 }
 
-/* Function to return the minimum of two variables */
+/**
+ * @brief Function to return the minimum of two variables.
+ * @param a The first variable.
+ * @param b The second variable.
+ * @return The minimum of the two variables.
+ */
 double minimum(double a, double b)
 {
-   if (a < b)
-   {
-      return (a);
-   }
-   return (b);
+    if (a < b)
+    {
+        return a;
+    }
+    return b;
 }
+
+/**
+ * @brief Function to perform Gaussian Elimination.
+ * @param A The matrix A.
+ * @param n The size of the matrix A.
+ * @param B The matrix B.
+ * @return 0 if successful, -1 if the matrix A is singular.
+ */
 int Gaussian_Elimination(double *A, int n, double *B)
 {
-   int row, i, j, pivot_row;
-   double max, dum, *pa, *pA, *A_pivot_row;
+    int row, i, j, pivot_row;
+    double max, dum, *pa, *pA, *A_pivot_row;
 
-   /* for each variable find pivot row and perform forward substitution*/
+    /* for each variable find pivot row and perform forward substitution*/
 
-   pa = A;
-   for (row = 0; row < (n - 1); row++, pa += n)
-   {
+    pa = A;
+    for (row = 0; row < (n - 1); row++, pa += n)
+    {
+        /*  find the pivot row*/
 
-      /*  find the pivot row*/
+        A_pivot_row = pa;
+        max = fabs(*(pa + row));
+        pA = pa + n;
+        pivot_row = row;
+        for (i = row + 1; i < n; pA += n, i++)
+            if ((dum = fabs(*(pA + row))) > max)
+            {
+                max = dum;
+                A_pivot_row = pA;
+                pivot_row = i;
+            }
+        if (max == 0.0)
+            return -1; /* the matrix A is singular */
 
-      A_pivot_row = pa;
-      max = fabs(*(pa + row));
-      pA = pa + n;
-      pivot_row = row;
-      for (i = row + 1; i < n; pA += n, i++)
-         if ((dum = fabs(*(pA + row))) > max)
-         {
-            max = dum;
-            A_pivot_row = pA;
-            pivot_row = i;
-         }
-      if (max == 0.0)
-         return -1; /* the matrix A is singular
+        /* and if it differs from the current row, interchange the two rows.*/
+        if (pivot_row != row)
+        {
+            for (i = row; i < n; i++)
+            {
+                dum = *(pa + i);
+                *(pa + i) = *(A_pivot_row + i);
+                *(A_pivot_row + i) = dum;
+            }
+            dum = B[row];
+            B[row] = B[pivot_row];
+            B[pivot_row] = dum;
+        }
 
-        // and if it differs from the current row, interchange the two rows.*/
+        for (i = row + 1; i < n; i++)
+        {
+            pA = A + i * n;
+            dum = -*(pA + row) / *(pa + row);
+            *(pA + row) = 0.0;
+            for (j = row + 1; j < n; j++)
+                *(pA + j) += dum * *(pa + j);
+            B[i] += dum * B[row];
+        }
+    }
 
-      if (pivot_row != row)
-      {
-         for (i = row; i < n; i++)
-         {
-            dum = *(pa + i);
-            *(pa + i) = *(A_pivot_row + i);
-            *(A_pivot_row + i) = dum;
-         }
-         dum = B[row];
-         B[row] = B[pivot_row];
-         B[pivot_row] = dum;
-      }
-
-      for (i = row + 1; i < n; i++)
-      {
-         pA = A + i * n;
-         dum = -*(pA + row) / *(pa + row);
-         *(pA + row) = 0.0;
-         for (j = row + 1; j < n; j++)
-            *(pA + j) += dum * *(pa + j);
-         B[i] += dum * B[row];
-      }
-   }
-
-   pa = A + (n - 1) * n;
-   for (row = n - 1; row >= 0; pa -= n, row--)
-   {
-      if (*(pa + row) == 0.0)
-         return -1;
-      dum = 1.0 / *(pa + row);
-      for (i = row + 1; i < n; i++)
-         *(pa + i) *= dum;
-      B[row] *= dum;
-      for (i = 0, pA = A; i < row; pA += n, i++)
-      {
-         dum = *(pA + row);
-         for (j = row + 1; j < n; j++)
-            *(pA + j) -= dum * *(pa + j);
-         B[i] -= dum * B[row];
-      }
-   }
-   return 0;
+    pa = A + (n - 1) * n;
+    for (row = n - 1; row >= 0; pa -= n, row--)
+    {
+        if (*(pa + row) == 0.0)
+            return -1;
+        dum = 1.0 / *(pa + row);
+        for (i = row + 1; i < n; i++)
+            *(pa + i) *= dum;
+        B[row] *= dum;
+        for (i = 0, pA = A; i < row; pA += n, i++)
+        {
+            dum = *(pA + row);
+            for (j = row + 1; j < n; j++)
+                *(pA + j) -= dum * *(pa + j);
+            B[i] -= dum * B[row];
+        }
+    }
+    return 0;
 }

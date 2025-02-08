@@ -3,11 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
 #include "global.h"
 #include "rand.h"
 
-/* Function to decode a population to find out the binary variable values based on its bit pattern */
+/**
+ * @brief Function to decode a population to find out the binary variable values based on its bit pattern.
+ * @param pop The population pointer.
+ */
 void decode_pop(population *pop)
 {
     int i;
@@ -21,7 +23,10 @@ void decode_pop(population *pop)
     return;
 }
 
-/* Function to decode an individual to find out the binary variable values based on its bit pattern */
+/**
+ * @brief Function to decode an individual to find out the binary variable values based on its bit pattern.
+ * @param ind The individual pointer.
+ */
 void decode_ind(individual *ind)
 {
     int j, k;

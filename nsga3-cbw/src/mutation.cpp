@@ -4,11 +4,17 @@
 #include <stdlib.h>
 #include <math.h>
 
-# include "misc.hpp"
+#include "misc.hpp"
 #include "global.h"
 #include "rand.h"
 
-/* Function to perform mutation in a population */
+/**
+ * @brief Performs mutation operations on an entire population.
+ *
+ * This function applies mutation to each individual in the population.
+ *
+ * @param pop Pointer to the population structure where mutation will be performed.
+ */
 void mutation_pop(population *pop)
 {
     int i;
@@ -19,7 +25,13 @@ void mutation_pop(population *pop)
     return;
 }
 
-/* Function to perform mutation of an individual */
+/**
+ * @brief Performs mutation on a single individual.
+ *
+ * This function applies both real and binary mutation operations if applicable.
+ *
+ * @param ind Pointer to the individual to be mutated.
+ */
 void mutation_ind(individual *ind)
 {
     if (nreal != 0)
@@ -33,7 +45,14 @@ void mutation_ind(individual *ind)
     return;
 }
 
-/* Routine for binary mutation of an individual */
+/**
+ * @brief Performs binary mutation on an individual.
+ *
+ * This function applies bit-flip mutation to the binary genes of an individual
+ * based on the binary mutation probability (pmut_bin).
+ *
+ * @param ind Pointer to the individual whose binary genes will be mutated.
+ */
 void bin_mutate_ind(individual *ind)
 {
     int j, k;
@@ -60,13 +79,21 @@ void bin_mutate_ind(individual *ind)
     return;
 }
 
-/* Routine for real polynomial mutation of an individual */
+/**
+ * @brief Performs polynomial mutation on real-valued variables.
+ *
+ * This function applies polynomial mutation to the real-valued variables of an individual.
+ * The mutation is performed using a polynomial probability distribution and ensures the
+ * mutated values stay within their specified bounds.
+ *
+ * @param ind Pointer to the individual whose real variables will be mutated.
+ */
 void real_mutate_ind(individual *ind)
 {
     int j;
     double rnd, delta1, delta2, mut_pow, deltaq;
     double y, yl, yu, val, xy;
-    for (j =0 ; j < nreal; j++)
+    for (j = 0; j < nreal; j++)
     {
         if (randomperc() <= pmut_real)
         {

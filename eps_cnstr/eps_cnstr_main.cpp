@@ -2,7 +2,7 @@
 //epa exec_id 1.0-target_reduction target_pollutant algorithm_var 1
 //epa 45 0.90 0 0 1
 
-//[MAIN]
+// [MAIN]
 
 #include "IpIpoptApplication.hpp"
 #include <fstream>
@@ -24,6 +24,14 @@
 
 using namespace Ipopt;
 using json = nlohmann::json;
+
+/**
+ * @brief Reads a JSON file and returns its contents as a nlohmann::json object.
+ *
+ * @param filename The path to the JSON file to read.
+ * @return A nlohmann::json object representing the contents of the file.
+ * @throws std::runtime_error If the file cannot be opened or parsed.
+ */
 json read_json_file(const std::string& filename) {
     // Open the JSON file
     std::ifstream file(filename);
@@ -42,6 +50,16 @@ json read_json_file(const std::string& filename) {
     return json_obj;
 }
 
+/**
+ * @brief Main entry point of the program.
+ *
+ * This program reads two JSON files, a base scenario and a scenario, and uses them to
+ * perform an optimization using the Ipopt library.
+ *
+ * @param argc The number of command-line arguments.
+ * @param argv An array of command-line arguments.
+ * @return An integer indicating the program's exit status.
+ */
 int main(
         int argc,
         char **argv
@@ -88,11 +106,7 @@ int main(
         uuids.push_back(xg::newGuid().str());
     }
 
-    
-
-
     fmt::print("filename_scenario: {}\n", filename_scenario);
-
 
     int option = 1;
     /*
@@ -176,3 +190,5 @@ int main(
     return 0;
 }
 
+// Example usage:
+// ./eps_cnstr input_base_scenario.json input_scenario.json output.json 0 0.9 5

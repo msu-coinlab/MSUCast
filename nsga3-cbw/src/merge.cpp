@@ -7,7 +7,16 @@
 #include "global.h"
 #include "rand.h"
 
-/* Routine to merge two populations into one */
+/**
+ * @brief Merges two populations into a third population.
+ *
+ * This function combines two populations (pop1 and pop2) into a third population (pop3).
+ * The first population is copied to the beginning of pop3, followed by the second population.
+ *
+ * @param pop1 Pointer to the first population to be merged.
+ * @param pop2 Pointer to the second population to be merged.
+ * @param pop3 Pointer to the destination population where the merged result will be stored.
+ */
 void merge(population *pop1, population *pop2, population *pop3)
 {
     int i, k;
@@ -22,7 +31,19 @@ void merge(population *pop1, population *pop2, population *pop3)
     return;
 }
 
-/* Routine to copy an individual 'ind1' into another individual 'ind2' */
+/**
+ * @brief Copies one individual to another.
+ *
+ * This function performs a deep copy of an individual's properties including:
+ * - Rank and constraint violation
+ * - Real-valued variables
+ * - Binary variables and their gene representations
+ * - Objective function values
+ * - Constraint values
+ *
+ * @param ind1 Pointer to the source individual to be copied.
+ * @param ind2 Pointer to the destination individual where the copy will be stored.
+ */
 void copy_ind(individual *ind1, individual *ind2)
 {
     int i, j;

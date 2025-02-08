@@ -7,7 +7,17 @@
 #include "global.h"
 #include "rand.h"
 
-/* Insert an element X into the list at location specified by NODE */
+/**
+ * @brief Inserts a new element into a doubly linked list.
+ *
+ * This function creates a new node with the given value and inserts it
+ * after the specified node in the doubly linked list. The new node becomes
+ * a child of the specified node, and maintains proper parent-child relationships.
+ *
+ * @param node Pointer to the node after which insertion should occur.
+ * @param x The value to be inserted into the new node.
+ * @throws Exits with error code 1 if node is NULL.
+ */
 void insert(list *node, int x)
 {
     list *temp;
@@ -28,7 +38,17 @@ void insert(list *node, int x)
     return;
 }
 
-/* Delete the node NODE from the list */
+/**
+ * @brief Deletes a node from the doubly linked list.
+ *
+ * This function removes the specified node from the list while maintaining
+ * the proper parent-child relationships between the remaining nodes.
+ * The memory allocated for the deleted node is freed.
+ *
+ * @param node Pointer to the node to be deleted.
+ * @return Pointer to the parent of the deleted node.
+ * @throws Exits with error code 1 if node is NULL.
+ */
 list *del(list *node)
 {
     list *temp;
