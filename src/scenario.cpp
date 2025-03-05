@@ -37,6 +37,7 @@
 #include <vector>
 #include <tuple>
 #include <memory>
+#include <random>
 
 #include "amqp.h"
 #include "misc_utilities.h"
@@ -57,6 +58,14 @@ namespace {
     std::string REDIS_DB_OPT = misc_utilities::get_env_var("REDIS_DB_OPT", "1");
     std::string REDIS_URL = fmt::format("tcp://{}:{}/{}", REDIS_HOST, REDIS_PORT, REDIS_DB_OPT);
 
+}
+
+// Function to generate a random boolean value (true or false)
+bool should_write_row() {
+    std::random_device rd; // Obtain a random number generator
+    std::mt19937 gen(rd()); // Seed the generator
+    std::uniform_int_distribution<> dis(0, 1); // Generate a random number between 0 and 1
+    return dis(gen) == 1; // Return true or false based on the random number
 }
 
 
@@ -476,7 +485,6 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
 
     // Access the JSON data
     amount_ = json_obj["amount"].get<std::unordered_map<std::string, double>>();
-
     phi_dict_ = json_obj["phi"].get<std::unordered_map<std::string, std::vector<double>>>();
     efficiency_ = json_obj["efficiency"].get<std::unordered_map<std::string, std::vector<std::vector<int>>>>();
 
@@ -1137,18 +1145,32 @@ int Scenario::write_land(
             parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build())};
 
 
-    int idx = 0;
-    int counter = 0;
-    for (const auto& entry : lc_x) {
-        auto [lrseg, agency, load_src, bmp_idx, amount] = entry;
+    // int idx = 0;
+    // int counter = 0;
+    // for (const auto& entry : lc_x) {
+    //     auto [lrseg, agency, load_src, bmp_idx, amount] = entry;
+    //     auto [fips, state, county, geography] = lrseg_dict_[lrseg];
+    //     int load_src_grp = u_u_group_dict[load_src];
+    //     int unit = 1; //acres
+    //     os<<counter+1<<agency<<fmt::format("SU{}",counter)<<state<<bmp_idx<<geography<<load_src_grp<<unit<<amount<<true<<""<<counter+1<<parquet::EndRow;
+    //     counter++;
+    // }
+
+    // return counter;
+
+    // Write just the first row
+    bool write_row = should_write_row();
+    // If write_row is true, proceed with writing the first row
+    if (write_row) {
+        auto [lrseg, agency, load_src, bmp_idx, amount] = lc_x[0]; // Get the first element
         auto [fips, state, county, geography] = lrseg_dict_[lrseg];
         int load_src_grp = u_u_group_dict[load_src];
-        int unit = 1; //acres
-        os<<counter+1<<agency<<fmt::format("SU{}",counter)<<state<<bmp_idx<<geography<<load_src_grp<<unit<<amount<<true<<""<<counter+1<<parquet::EndRow;
-        counter++;
+        int unit = 1; // acres
+
+        os << 1 << agency << fmt::format("SU{}", 1) << state << bmp_idx << geography << load_src_grp << unit << amount << true << "" << 1 << parquet::EndRow;
     }
 
-    return counter;
+    return write_row ? 1 : 0;  // Return 1 if a row was written, 0 if not
 }
 
 int Scenario::write_animal ( const std::vector<std::tuple<int, int, int, int, int, double>>& animal_x,
@@ -1156,7 +1178,6 @@ int Scenario::write_animal ( const std::vector<std::tuple<int, int, int, int, in
     if (animal_x.size() == 0) {
         return 0;
     }
-
 
     parquet::schema::NodeVector fields;
 
