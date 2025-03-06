@@ -1412,4 +1412,3 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
 
     return manure_dry_lbs;
 }
-
