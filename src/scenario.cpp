@@ -657,59 +657,58 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
 }
 
 void Scenario::initialize_vector(std::vector<double>& x) {
+    // Ensure the vector has the correct size for all variables
     if (x.size() != nvars_) {
         x.resize(nvars_);
     }
 
+    // Initialize land conversion (lc) variables if enabled
     if (is_lc_enabled == true) {
-        size_t lc_idx = lc_begin_;
+        size_t lc_idx = lc_begin_;  // Start index for land conversion variables
         for (const auto &key: lc_keys_) {
             auto bmp_group = land_conversion_from_bmp_to[key];
-            x[lc_idx] = 1.0;
+            x[lc_idx] = 1.0;  // Set base value to 1.0
             ++lc_idx;
-            /*
-            bool flag = false;
-            if (std::find(my_s_h_u_vec.begin(), my_s_h_u_vec.end(), key) != my_s_h_u_vec.end()) {
-                flag = true;
-            }
-            */
+            
+            // Initialize each BMP in the group with random values between 0 and 1
             for (const auto &bmp: bmp_group) {
-                /********if(flag) {
-                    x[lc_idx] = 0.0;
-                } else {*/
-                    x[lc_idx] = misc_utilities::rand_double(0.0, 1.0); 
-                    //x[lc_idx] = misc_utilities::rand_double(0.0, 1.0); 
-                //}
+                x[lc_idx] = misc_utilities::rand_double(0.0, 1.0); 
                 ++lc_idx;
             }
         }
     }
 
+    // Initialize animal variables if enabled
     if (is_animal_enabled == true) {
-        size_t animal_idx = animal_begin_;
+        size_t animal_idx = animal_begin_;  // Start index for animal variables
         for (const auto &key: animal_keys_) {
             auto bmp_group = animal_complete_[key];
-            x[animal_idx] = 1.0;
+            x[animal_idx] = 1.0;  // Set base value to 1.0
             ++animal_idx;
+            
+            // Initialize each BMP in the group with random values between 0 and 1
             for (const auto &bmp: bmp_group) {
                 x[animal_idx] = misc_utilities::rand_double(0.0, 1.0); 
                 ++animal_idx;
             }
         }
     }
+
+    // Initialize manure variables if enabled
     if (is_manure_enabled == true) {
-        size_t manure_idx = manure_begin_;
+        size_t manure_idx = manure_begin_;  // Start index for manure variables
         for (const auto &key: manure_keys_) {
             auto neighbors = manure_all_[key];
-            x[manure_idx] = 1.0;
+            x[manure_idx] = 1.0;  // Set base value to 1.0
             ++manure_idx;
+            
+            // Initialize each neighbor with random values between 0 and 1
             for (const auto &neighbor : neighbors) {
                 x[manure_idx] = misc_utilities::rand_double(0.0, 1.0); 
                 ++manure_idx;
             }
         }
     }
-
 }
 /*
  * 
@@ -847,52 +846,76 @@ double Scenario::normalize_lc(const std::vector<double>& x,
         std::vector<std::tuple<int, int, int, int, double>>& lc_x,
         std::unordered_map<std::string, double>& amount_minus,
         std::unordered_map<std::string, double>& amount_plus) {
-    int counter = lc_begin_;
-    amount_minus.clear();
-    amount_plus.clear();
-    lc_x.clear();
-    double total_cost = 0.0;
-    //std::vector<std::string> lc_altered_keys;
+    // Initialize counters and clear output containers
+    int counter = lc_begin_;  // Start from the land conversion section of the input vector
+    amount_minus.clear();     // Clear the map tracking reductions in source areas
+    amount_plus.clear();      // Clear the map tracking increases in target areas
+    lc_x.clear();            // Clear the output vector for normalized land conversions
+    double total_cost = 0.0; // Initialize total cost accumulator
+
+    // Process each land conversion key (e.g., "lrseg_agency_loadsrc")
     for (const auto& key : lc_keys_) {
-        std::vector<std::string> bmp_group =  land_conversion_from_bmp_to[key];
+        // Get the BMP group for this key and prepare temporary storage
+        std::vector<std::string> bmp_group = land_conversion_from_bmp_to[key];
         std::vector<std::pair<double, std::string>> grp_tmp;
         std::vector <std::string> key_split;
-        double sum = x[counter];
+        
+        // Calculate sum of all values in this group (base + BMP values)
+        double sum = x[counter];  // Start with base value
         misc_utilities::split_str(key, '_', key_split);
         auto [lrseg, agency, load_src] = std::make_tuple(std::stoi(key_split[0]), std::stoi(key_split[1]), std::stoi(key_split[2]));
         ++counter;
 
+        // Collect all BMP values for this group
         for (std::string bmp : bmp_group) {
-            grp_tmp.push_back({x[counter], bmp});
-            sum += x[counter];
+            grp_tmp.push_back({x[counter], bmp});  // Store value and BMP identifier
+            sum += x[counter];                     // Add to running sum
             ++counter;
         }
 
-        double pct_accum = 0.0;
-        std::vector<std::pair<double, std::string>> grp_pct_tmp;
+        // Normalize and process each BMP in the group
+        double pct_accum = 0.0;  // Track accumulated percentage for this group
         for (auto line : grp_tmp) {
-            double pct = line.first;
-            std::string to = line.second;
-            double norm_pct =  (MAX_PCT_LC_BMP*pct) / sum;
+            double pct = line.first;      // Get the raw percentage
+            std::string to = line.second; // Get the target BMP identifier
+            
+            // Normalize the percentage:
+            // 1. Multiply by MAX_PCT_LC_BMP (0.30) to enforce maximum conversion limit
+            // 2. Divide by sum to ensure values are properly scaled relative to each other
+            double norm_pct = (MAX_PCT_LC_BMP * pct) / sum;
+            
+            // Parse the target BMP information
             std::vector <std::string> out_to;
             misc_utilities::split_str(to, '_', out_to);
             auto bmp = std::stoi(out_to[0]);
             auto key_to = fmt::format("{}_{}_{}", key_split[0], key_split[1], out_to[1]);
+            
+            // Track the changes in amounts:
+            // - Add to amount_plus for the target area
+            // - Accumulate the percentage for amount_minus calculation
             sum_alpha(amount_plus, key_to, norm_pct * amount_[key]);
             pct_accum += norm_pct;
+            
+            // Only include conversions where the normalized amount is significant (> 1.0)
             if (norm_pct * amount_[key] > 1.0) {
                 double amount = (norm_pct * amount_[key]);
+                // Get location information for cost calculation
                 auto [fips, state, county, geography] = lrseg_dict_[lrseg];
                 auto key_bmp_cost = fmt::format("{}_{}", state, bmp);
                 double cost = amount * bmp_cost_[key_bmp_cost];
                 total_cost += cost;
+                
+                // Add the normalized conversion to the output vector:
+                // Format: (lrseg, agency, load_src, bmp, amount)
                 lc_x.push_back({std::stoi(key_split[0]), std::stoi(key_split[1]), std::stoi(key_split[2]), bmp, norm_pct * amount_[key]});
             }
         }
+        
+        // Track the total reduction in the source area
         sum_alpha(amount_minus, key, pct_accum * amount_[key]);
     }
-    //std::cout<<"lc_x: "<<lc_x.size()<<std::endl;
-    return total_cost;
+    
+    return total_cost;  // Return the total cost of all included conversions
 }
 
 

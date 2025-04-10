@@ -81,6 +81,7 @@ private:
     bool is_lc_enabled_;
     bool is_animal_enabled_;
     bool is_manure_enabled_;
+    std::string base_scenario_name_;
     std::string input_filename_;
     std::string scenario_filename_;
     std::string out_dir_;

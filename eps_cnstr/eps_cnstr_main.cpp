@@ -74,14 +74,15 @@ int main(
     int pollutant_idx = std::atoi(argv[4]); // 0
     double reduction= 1.0 - std::atof(argv[5]); // 0.9
     int nsteps = std::atoi(argv[6]); //5
+    std::string base_scenario_name = argv[7];
     
     bool evaluate_cast = true;
 
-    if (argc > 7) {
-        evaluate_cast = ( std::atoi(argv[7]) == 1)? true : false;
-    }
     if (argc > 8) {
-        parent_uuid_path = argv[8];
+        evaluate_cast = ( std::atoi(argv[8]) == 1)? true : false;
+    }
+    if (argc > 9) {
+        parent_uuid_path = argv[9];
     }
 
     for (int i = 0; i < nsteps; i++) {
@@ -110,7 +111,7 @@ int main(
     }
     */
     if (option == 1) { //ipopt Opt3
-        EpsConstraint eps_constr(base_scenario_json, scenario_json, path_out, pollutant_idx, evaluate_cast);
+        EpsConstraint eps_constr(base_scenario_json, scenario_json, base_scenario_name, path_out, pollutant_idx, evaluate_cast);
         eps_constr.constr_eval(reduction, nsteps, uuids, parent_uuid_path);
     }
     /*

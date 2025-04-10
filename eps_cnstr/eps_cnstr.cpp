@@ -13,7 +13,7 @@
 
 namespace fs = std::filesystem;
 
-EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast){ 
+EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& base_scenario_name, const std::string& path_out, int pollutant_idx, bool evaluate_cast){ 
     path_out_ = path_out;
     // Check if the directory exists
     if (!fs::exists(path_out)) {
@@ -27,7 +27,7 @@ EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenari
         }
     }
     evaluate_cast_ = evaluate_cast;
-
+    base_scenario_name_ = base_scenario_name;
     mynlp = new EPA_NLP(base_scenario_json, scenario_json, path_out, pollutant_idx);
     app = IpoptApplicationFactory();
 }

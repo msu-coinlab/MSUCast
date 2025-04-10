@@ -16,6 +16,7 @@ class EpsConstraint {
     // https://pdimov.github.io/blog/2020/09/07/named-parameters-in-c20/
     std::string path_out_;
     bool evaluate_cast_;
+    std::string base_scenario_name_;
     //SmartPtr <TNLP> mynlp;
     SmartPtr <EPA_NLP> mynlp;
     SmartPtr <IpoptApplication> app;

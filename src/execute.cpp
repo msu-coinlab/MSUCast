@@ -168,16 +168,15 @@ void Execute::execute_local(
         const std::string& out_path,
         int pollutant_idx, //0
         double ipopt_reduction, //0.30
-        int ipopt_popsize //10
+        int ipopt_popsize, //10
+        const std::string& scenario_name
         ) {
     std::string env_var = "OPT4CAST_EPS_CNSTR_PATH";
     std::string EPS_CNSTR_PATH = misc_utilities::get_env_var("OPT4CAST_RUN_EPS_CNSTR_PATH", "/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr");
-    // const std::string& emo_uuid, 
-    // std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}/config/", emo_uuid);
     std::string reportloads_json_path = fmt::format("{}/reportloads_processed.json", in_path);
     std::string scenario_json_path = fmt::format("{}/scenario.json", in_path);;;
     std::string uuids_json_path = fmt::format("{}/uuids.json", in_path);;;
-    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {}", 
+    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {} {}", 
                 EPS_CNSTR_PATH, 
                 reportloads_json_path, 
                 scenario_json_path, 
@@ -186,7 +185,8 @@ void Execute::execute_local(
                 ipopt_reduction, 
                 ipopt_popsize,
                 1,
-                uuids_json_path 
+                uuids_json_path,
+                scenario_name
                 );
 
     fmt::print("exec_string: {}\n", exec_string);

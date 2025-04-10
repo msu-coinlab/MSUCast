@@ -324,12 +324,14 @@ namespace {
 }
 
 
-PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, const std::string& manure_nutrients_file ) {
+PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, const std::string& manure_nutrients_file, const std::string& base_scenario_name ) {
     out_dir_= out_dir;
     is_ef_enabled_ = is_ef_enabled;
     is_lc_enabled_ = is_lc_enabled;
     is_animal_enabled_ = is_animal_enabled;
     is_manure_enabled_ = is_manure_enabled;
+    base_scenario_name_ = base_scenario_name;
+    std::cout << "base_scenario_name inside PSO constructor: " << base_scenario_name << std::endl;
     ef_size_ = 0;
     lc_size_ = 0;
     animal_size_ = 0;
@@ -405,6 +407,7 @@ PSO& PSO::operator=(const PSO &p) {
 PSO::~PSO() {
     //delete_tmp_files();
 }
+
 void PSO::delete_tmp_files(){
     int counter = 0;
     std::string directory = fmt::format("/opt/opt4cast/output/nsga3/{}", emo_uuid_);
@@ -777,7 +780,7 @@ void PSO::exec_ipopt(){
     //OPT4CAST_RUN_EPS_CNSTR_PATH = os.environ.get('OPT4CAST_RUN_EPS_CNSTR_PATH', '/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr')
 
 
-    std::string  in_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/reportloads_processed.json"; 
+    std::string in_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/reportloads_processed.json"; 
     std::string out_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/scenario.json";
     std::string uuids = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/uuids.json";
     "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/front";
@@ -854,8 +857,8 @@ void PSO::evaluate() {
         particles[i].set_uuid(exec_uuid);
         bool flag = true;
         if(is_ef_enabled_){
-            //total_cost += scenario_.normalize_ef(x, ef_x);
-            //particles[i].set_ef_x(lc_x);
+            total_cost += scenario_.normalize_efficiency(x, ef_x);
+            particles[i].set_ef_x(lc_x);
         }
         
         if(is_lc_enabled_){
