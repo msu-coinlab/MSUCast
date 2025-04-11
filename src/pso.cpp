@@ -856,10 +856,10 @@ void PSO::evaluate() {
         std::string exec_uuid = xg::newGuid().str();
         particles[i].set_uuid(exec_uuid);
         bool flag = true;
-        if(is_ef_enabled_){
-            total_cost += scenario_.normalize_efficiency(x, ef_x);
-            particles[i].set_ef_x(lc_x);
-        }
+        // if(is_ef_enabled_){
+        //     total_cost += scenario_.normalize_efficiency(x, ef_x);
+        //     particles[i].set_ef_x(lc_x);
+        // }
         
         if(is_lc_enabled_){
             double lc_cost  = scenario_.normalize_lc(x, lc_x, amount_minus, amount_plus);
