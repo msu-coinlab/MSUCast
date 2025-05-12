@@ -1086,11 +1086,17 @@ int Scenario::write_land(
 
 
     std::shared_ptr<arrow::io::FileOutputStream> outfile;
+    std::shared_ptr<arrow::io::FileOutputStream> new_bmps_outfile;
 
+    std::string new_bmps_out_filename = out_filename;
+    auto pos = new_bmps_out_filename.rfind(".parquet");
+    if (pos != std::string::npos) {
+        new_bmps_out_filename.insert(pos, "_new_bmps.parquet");
+    }
+    
 
-    PARQUET_ASSIGN_OR_THROW(
-            outfile,
-            arrow::io::FileOutputStream::Open(out_filename));
+    PARQUET_ASSIGN_OR_THROW(outfile, arrow::io::FileOutputStream::Open(out_filename));
+    PARQUET_ASSIGN_OR_THROW(new_bmps_outfile, arrow::io::FileOutputStream::Open(new_bmps_out_filename));
 
     parquet::WriterProperties::Builder builder;
     //builder.compression(parquet::Compression::ZSTD);
@@ -1144,6 +1150,8 @@ int Scenario::write_land(
     parquet::StreamWriter os{
             parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build())};
 
+    parquet::StreamWriter new_bmp_os{
+            parquet::ParquetFileWriter::Open(new_bmps_outfile, my_schema, builder.build())};
 
     int counter = 0;
     std::cout << "Adding the base BMP inputs" << std::endl;
@@ -1168,8 +1176,7 @@ int Scenario::write_land(
             <<parquet::EndRow;
         counter++;
     }
-
-    counter = 0;
+    
     std::cout << "Adding the new BMP inputs" << std::endl;
     for (const auto& entry : lc_x) {
         auto [lrseg, agency, load_src, bmp_idx, amount] = entry;
@@ -1177,6 +1184,20 @@ int Scenario::write_land(
         int load_src_grp = u_u_group_dict[load_src];
         int unit = 1; //acres
         os
+            <<counter+1
+            <<agency
+            <<fmt::format("SU{}",counter)
+            <<state
+            <<bmp_idx
+            <<geography
+            <<load_src_grp
+            <<unit
+            <<amount
+            <<true
+            <<""
+            <<counter+1
+            <<parquet::EndRow;
+        new_bmp_os
             <<counter+1
             <<agency
             <<fmt::format("SU{}",counter)
