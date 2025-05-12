@@ -41,6 +41,7 @@ int main (int argc, char *argv[]) {
     scenario.initialize_vector(x);
     
     std::vector<std::tuple<int, int, int, int, double>> lc_x;
+    std::vector<std::tuple<int, int, int, int, double>> land_bmp_inputs;
     std::unordered_map<std::string, double> amount_minus;
     std::unordered_map<std::string, double> amount_plus;
 
@@ -53,7 +54,7 @@ int main (int argc, char *argv[]) {
     exec_uuid_vec.push_back(exec_uuid);
     fmt::print("exec_uuid: {}\n", exec_uuid);  
     auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
-    scenario.write_land(lc_x, land_filename);
+    scenario.write_land(lc_x, land_filename, land_bmp_inputs);
     std::vector<std::tuple<int, int, int, int, int, double>> animal_x;
     total_cost += scenario.normalize_animal(x, animal_x); 
     auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);

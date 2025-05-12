@@ -126,7 +126,7 @@ void Scenario::init(const std::string& filename, const std::string& filename_sce
         fmt::print("Manure Dry Lbs:\n");
         for (const auto& [key, value] : manure_dry_lbs_) {
              double moisture = 0.7;
-             double amount = value/ (1.0 - moisture); //convert to wet pounds 
+             double amount = value / (1.0 - moisture); //convert to wet pounds 
              amount = amount / 2000.0; //convert to wet tons
              fmt::print("{}: {} wet tons\n", key, amount);
         }
@@ -1055,7 +1055,7 @@ size_t Scenario::write_manure_json(const std::vector<std::tuple<int, int, int, i
 
 int Scenario::write_land(
         const std::vector<std::tuple<int, int, int, int, double>>& lc_x,
-        const std::string& out_filename
+        const std::string& out_filename, std::vector<std::tuple<int, int, int, int, double>> base_land_bmp_inputs
 ) {
     if (lc_x.size() == 0) {
         return 0;
@@ -1145,32 +1145,72 @@ int Scenario::write_land(
             parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build())};
 
 
-    // int idx = 0;
-    // int counter = 0;
-    // for (const auto& entry : lc_x) {
-    //     auto [lrseg, agency, load_src, bmp_idx, amount] = entry;
-    //     auto [fips, state, county, geography] = lrseg_dict_[lrseg];
-    //     int load_src_grp = u_u_group_dict[load_src];
-    //     int unit = 1; //acres
-    //     os<<counter+1<<agency<<fmt::format("SU{}",counter)<<state<<bmp_idx<<geography<<load_src_grp<<unit<<amount<<true<<""<<counter+1<<parquet::EndRow;
-    //     counter++;
-    // }
-
-    // return counter;
-
-    // Write just the first row
-    bool write_row = should_write_row();
-    // If write_row is true, proceed with writing the first row
-    if (write_row) {
-        auto [lrseg, agency, load_src, bmp_idx, amount] = lc_x[0]; // Get the first element
+    int counter = 0;
+    std::cout << "Adding the base BMP inputs" << std::endl;
+    for (const auto& entry : base_land_bmp_inputs) {
+        auto [lrseg, agency, load_src, bmp_idx, amount] = entry;
         auto [fips, state, county, geography] = lrseg_dict_[lrseg];
         int load_src_grp = u_u_group_dict[load_src];
-        int unit = 1; // acres
-
-        os << 1 << agency << fmt::format("SU{}", 1) << state << bmp_idx << geography << load_src_grp << unit << amount << true << "" << 1 << parquet::EndRow;
+        int unit = 1; //acres
+        os
+            <<counter+1
+            <<agency
+            <<fmt::format("SU{}",counter)
+            <<state
+            <<bmp_idx
+            <<geography
+            <<load_src_grp
+            <<unit
+            <<amount
+            <<true
+            <<""
+            <<counter+1
+            <<parquet::EndRow;
+        counter++;
     }
 
-    return write_row ? 1 : 0;  // Return 1 if a row was written, 0 if not
+    counter = 0;
+    std::cout << "Adding the new BMP inputs" << std::endl;
+    for (const auto& entry : lc_x) {
+        auto [lrseg, agency, load_src, bmp_idx, amount] = entry;
+        auto [fips, state, county, geography] = lrseg_dict_[lrseg];
+        int load_src_grp = u_u_group_dict[load_src];
+        int unit = 1; //acres
+        os
+            <<counter+1
+            <<agency
+            <<fmt::format("SU{}",counter)
+            <<state
+            <<bmp_idx
+            <<geography
+            <<load_src_grp
+            <<unit
+            <<amount
+            <<true
+            <<""
+            <<counter+1
+            <<parquet::EndRow;
+        counter++;
+    }
+
+   
+
+
+    return counter;
+
+    // Write just the first row
+    // bool write_row = should_write_row();
+    // // If write_row is true, proceed with writing the first row
+    // if (write_row) {
+    //     auto [lrseg, agency, load_src, bmp_idx, amount] = lc_x[0]; // Get the first element
+    //     auto [fips, state, county, geography] = lrseg_dict_[lrseg];
+    //     int load_src_grp = u_u_group_dict[load_src];
+    //     int unit = 1; // acres
+
+    //     os << 1 << agency << fmt::format("SU{}", 1) << state << bmp_idx << geography << load_src_grp << unit << amount << true << "" << 1 << parquet::EndRow;
+    // }
+
+    // return write_row ? 1 : 0;  // Return 1 if a row was written, 0 if not
 }
 
 int Scenario::write_animal ( const std::vector<std::tuple<int, int, int, int, int, double>>& animal_x,

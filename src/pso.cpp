@@ -5,7 +5,6 @@
 //#include "pso.h"
 
 #include <iostream>
-#include <vector>
 #include <random>
 #include <algorithm>
 #include <functional>
@@ -13,6 +12,7 @@
 #include <cmath>
 #include <functional> // For std::reference_wrapper
 #include <fstream>
+
 
 #include <range/v3/all.hpp>
 
@@ -30,6 +30,23 @@
 #include <optional>
 #include <fstream>
 #include <algorithm>
+
+
+#include <arrow/api.h>
+#include <arrow/io/api.h>
+#include <arrow/array.h>
+#include <arrow/array/concatenate.h>
+#include <arrow/io/file.h>
+#include <arrow/status.h>
+#include <arrow/table.h>
+#include <arrow/type.h>
+#include <parquet/arrow/reader.h>
+#include <parquet/arrow/writer.h>
+#include <parquet/exception.h>
+#include <vector>
+#include <tuple>
+#include <string>
+#include <memory>
 
 #include <nlohmann/json.hpp>
 
@@ -160,11 +177,11 @@ namespace {
     std::mt19937 gen(rd());
 
     std::string replace_ending(const std::string& str, const std::string& oldEnding, const std::string& newEnding) {
-    if (str.ends_with(oldEnding)) {
-        return str.substr(0, str.size() - oldEnding.size()) + newEnding;
+        if (str.ends_with(oldEnding)) {
+            return str.substr(0, str.size() - oldEnding.size()) + newEnding;
+        }
+        return str;
     }
-    return str;
-}
     
     void save(const std::vector<std::vector<double>>& data, const std::string& filename) {
         std::ofstream outFile(filename);
@@ -324,7 +341,76 @@ namespace {
 }
 
 
-PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, const std::string& manure_nutrients_file ) {
+std::vector<std::tuple<int, int, int, int, double>> read_parquet_file(std::string file_name) {
+    using arrow::default_memory_pool;
+    using parquet::arrow::FileReader;
+  
+    // 1) Open the file
+    std::shared_ptr<arrow::io::ReadableFile> infile;
+    PARQUET_ASSIGN_OR_THROW(
+      infile,
+      arrow::io::ReadableFile::Open(file_name, default_memory_pool())
+    );
+  
+    // 2) Open a ParquetFileReader
+    std::unique_ptr<FileReader> reader;
+    PARQUET_THROW_NOT_OK(
+      parquet::arrow::OpenFile(infile, default_memory_pool(), &reader)
+    );
+  
+    // 3) Read whole file into a Table
+    std::shared_ptr<arrow::Table> table;
+    PARQUET_THROW_NOT_OK(reader->ReadTable(&table));
+  
+    int64_t nrows = table->num_rows();
+    if (nrows == 0) return {};
+  
+    // 4) Get column arrays - use proper casting
+    auto col0 = std::static_pointer_cast<arrow::Int32Array>(table->column(0)->chunk(0));
+    auto col1 = std::static_pointer_cast<arrow::Int32Array>(table->column(1)->chunk(0));
+    auto col2 = std::static_pointer_cast<arrow::Int32Array>(table->column(2)->chunk(0));
+    auto col3 = std::static_pointer_cast<arrow::Int32Array>(table->column(3)->chunk(0));
+    auto col4 = std::static_pointer_cast<arrow::DoubleArray>(table->column(4)->chunk(0));
+  
+    // Handle multiple chunks if necessary
+    if (table->column(0)->num_chunks() > 1 || 
+        table->column(1)->num_chunks() > 1 || 
+        table->column(2)->num_chunks() > 1 || 
+        table->column(3)->num_chunks() > 1 || 
+        table->column(4)->num_chunks() > 1) {
+      
+        std::shared_ptr<arrow::Array> raw0, raw1, raw2, raw3, raw4;
+        PARQUET_ASSIGN_OR_THROW(raw0, arrow::Concatenate(table->column(0)->chunks(), default_memory_pool()));
+        PARQUET_ASSIGN_OR_THROW(raw1, arrow::Concatenate(table->column(1)->chunks(), default_memory_pool()));
+        PARQUET_ASSIGN_OR_THROW(raw2, arrow::Concatenate(table->column(2)->chunks(), default_memory_pool()));
+        PARQUET_ASSIGN_OR_THROW(raw3, arrow::Concatenate(table->column(3)->chunks(), default_memory_pool()));
+        PARQUET_ASSIGN_OR_THROW(raw4, arrow::Concatenate(table->column(4)->chunks(), default_memory_pool()));
+      
+      col0 = std::static_pointer_cast<arrow::Int32Array>(raw0);
+      col1 = std::static_pointer_cast<arrow::Int32Array>(raw1);
+      col2 = std::static_pointer_cast<arrow::Int32Array>(raw2);
+      col3 = std::static_pointer_cast<arrow::Int32Array>(raw3);
+      col4 = std::static_pointer_cast<arrow::DoubleArray>(raw4);
+    }
+  
+    // 5) Pull out row values into your vector of tuples
+    std::vector<std::tuple<int, int, int, int, double>> result;
+    result.reserve(nrows);
+    for (int64_t i = 0; i < nrows; ++i) {
+      result.emplace_back(
+        col0->Value(i),
+        col1->Value(i),
+        col2->Value(i),
+        col3->Value(i),
+        col4->Value(i)
+      );
+    }
+  
+    return result;
+}
+
+// add the file and dont forget the header 
+PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, const std::string& manure_nutrients_file, const std::string& base_land_bmp_file) {
     out_dir_= out_dir;
     is_ef_enabled_ = is_ef_enabled;
     is_lc_enabled_ = is_lc_enabled;
@@ -346,6 +432,8 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     this->lower_bound = lb; 
     this->upper_bound = ub; 
     //logger_ = spdlog::stdout_color_mt("PSO");
+
+    base_land_bmp_inputs_ = read_parquet_file(base_land_bmp_file);
 }
 PSO::PSO(const PSO &p) {
     this->dim = p.dim;
@@ -699,8 +787,9 @@ void PSO::evaluate_ipopt_sols(const std::string& sub_dir, const std::string& ipo
         std::string exec_uuid = xg::newGuid().str();
         exec_uuid_vec.emplace_back(exec_uuid);
         auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
-        scenario_.write_land(combined, land_filename);
+        scenario_.write_land(combined, land_filename, base_land_bmp_inputs_);
         scenario_.write_land_json(combined, replace_ending(land_filename, ".parquet", ".json"));
+        // Just doe write land for now 
 
         if(is_animal_enabled_){
             auto animal_dst = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
@@ -868,7 +957,8 @@ void PSO::evaluate() {
             particles[i].set_lc_x(lc_x);
             //fmt::print("exec_uuid: {}\n", exec_uuid);  
             auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
-            scenario_.write_land(lc_x, land_filename);
+            std::cout << "Writing the land file" << std::endl;
+            scenario_.write_land(lc_x, land_filename, base_land_bmp_inputs_);
             if (!std::filesystem::exists(land_filename)) {
                 total_cost = 9999999999999.99;
                 particles[i].set_lc_cost(lc_cost);
