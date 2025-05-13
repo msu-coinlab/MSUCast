@@ -1091,7 +1091,7 @@ int Scenario::write_land(
     std::string new_bmps_out_filename = out_filename;
     auto pos = new_bmps_out_filename.rfind(".parquet");
     if (pos != std::string::npos) {
-        new_bmps_out_filename.insert(pos, "_new_bmps.parquet");
+        new_bmps_out_filename.insert(pos, "_new_bmps");
     }
     
 
@@ -1176,7 +1176,7 @@ int Scenario::write_land(
             <<parquet::EndRow;
         counter++;
     }
-    
+
     std::cout << "Adding the new BMP inputs" << std::endl;
     for (const auto& entry : lc_x) {
         auto [lrseg, agency, load_src, bmp_idx, amount] = entry;

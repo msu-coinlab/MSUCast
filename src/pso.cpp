@@ -341,7 +341,7 @@ namespace {
 }
 
 
-std::vector<std::tuple<int, int, int, int, double>> read_parquet_file(std::string file_name) {
+std::vector<std::tuple<int, int, int, int, double>> read_parquet_file_land(std::string file_name) {
     using arrow::default_memory_pool;
     using parquet::arrow::FileReader;
   
@@ -408,9 +408,83 @@ std::vector<std::tuple<int, int, int, int, double>> read_parquet_file(std::strin
   
     return result;
 }
+std::vector<std::tuple<int, int, int, int, int, double>> read_parquet_file(std::string file_name) {
+    using arrow::default_memory_pool;
+    using parquet::arrow::FileReader;
+  
+    // 1) Open the file
+    std::shared_ptr<arrow::io::ReadableFile> infile;
+    PARQUET_ASSIGN_OR_THROW(
+      infile,
+      arrow::io::ReadableFile::Open(file_name, default_memory_pool())
+    );
+  
+    // 2) Open a ParquetFileReader
+    std::unique_ptr<FileReader> reader;
+    PARQUET_THROW_NOT_OK(
+      parquet::arrow::OpenFile(infile, default_memory_pool(), &reader)
+    );
+  
+    // 3) Read whole file into a Table
+    std::shared_ptr<arrow::Table> table;
+    PARQUET_THROW_NOT_OK(reader->ReadTable(&table));
+  
+    int64_t nrows = table->num_rows();
+    if (nrows == 0) return {};
+  
+    // 4) Get column arrays (now five Int32 and one Double)
+    auto col0 = std::static_pointer_cast<arrow::Int32Array>(table->column(0)->chunk(0));
+    auto col1 = std::static_pointer_cast<arrow::Int32Array>(table->column(1)->chunk(0));
+    auto col2 = std::static_pointer_cast<arrow::Int32Array>(table->column(2)->chunk(0));
+    auto col3 = std::static_pointer_cast<arrow::Int32Array>(table->column(3)->chunk(0));
+    auto col4 = std::static_pointer_cast<arrow::Int32Array>(table->column(4)->chunk(0));
+    auto col5 = std::static_pointer_cast<arrow::DoubleArray>(table->column(5)->chunk(0));
+  
+    // Handle multiple chunks if necessary
+    if (table->column(0)->num_chunks() > 1 ||
+        table->column(1)->num_chunks() > 1 ||
+        table->column(2)->num_chunks() > 1 ||
+        table->column(3)->num_chunks() > 1 ||
+        table->column(4)->num_chunks() > 1 ||
+        table->column(5)->num_chunks() > 1) {
+      
+      std::shared_ptr<arrow::Array> raw0, raw1, raw2, raw3, raw4, raw5;
+      PARQUET_ASSIGN_OR_THROW(raw0, arrow::Concatenate(table->column(0)->chunks(), default_memory_pool()));
+      PARQUET_ASSIGN_OR_THROW(raw1, arrow::Concatenate(table->column(1)->chunks(), default_memory_pool()));
+      PARQUET_ASSIGN_OR_THROW(raw2, arrow::Concatenate(table->column(2)->chunks(), default_memory_pool()));
+      PARQUET_ASSIGN_OR_THROW(raw3, arrow::Concatenate(table->column(3)->chunks(), default_memory_pool()));
+      PARQUET_ASSIGN_OR_THROW(raw4, arrow::Concatenate(table->column(4)->chunks(), default_memory_pool()));
+      PARQUET_ASSIGN_OR_THROW(raw5, arrow::Concatenate(table->column(5)->chunks(), default_memory_pool()));
+      
+      col0 = std::static_pointer_cast<arrow::Int32Array>(raw0);
+      col1 = std::static_pointer_cast<arrow::Int32Array>(raw1);
+      col2 = std::static_pointer_cast<arrow::Int32Array>(raw2);
+      col3 = std::static_pointer_cast<arrow::Int32Array>(raw3);
+      col4 = std::static_pointer_cast<arrow::Int32Array>(raw4);
+      col5 = std::static_pointer_cast<arrow::DoubleArray>(raw5);
+    }
+  
+    // 5) Pull out row values into your vector of tuples
+    std::vector<std::tuple<int, int, int, int, int, double>> result;
+    result.reserve(nrows);
+    for (int64_t i = 0; i < nrows; ++i) {
+      result.emplace_back(
+        col0->Value(i),
+        col1->Value(i),
+        col2->Value(i),
+        col3->Value(i),
+        col4->Value(i),
+        col5->Value(i)
+      );
+    }
+  
+    return result;
+}
+
 
 // add the file and dont forget the header 
-PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, const std::string& manure_nutrients_file, const std::string& base_land_bmp_file) {
+PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, 
+        const std::string& manure_nutrients_file, const std::string& base_land_bmp_file, const std::string& base_animal_bmp_file, const std::string& base_manure_bmp_file) {
     out_dir_= out_dir;
     is_ef_enabled_ = is_ef_enabled;
     is_lc_enabled_ = is_lc_enabled;
@@ -433,7 +507,15 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     this->upper_bound = ub; 
     //logger_ = spdlog::stdout_color_mt("PSO");
 
-    base_land_bmp_inputs_ = read_parquet_file(base_land_bmp_file);
+    // Store the base file path 
+    base_land_bmp_file_ = base_land_bmp_file;
+    base_animal_bmp_file_ = base_animal_bmp_file;
+    base_manure_bmp_file_ = base_manure_bmp_file;
+
+    // unpack the parquet file and store them as vectore tuples 
+    base_land_bmp_inputs_ = read_parquet_file_land(base_land_bmp_file);
+    base_animal_bmp_inputs_ = read_parquet_file(base_animal_bmp_file);
+    base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
 }
 PSO::PSO(const PSO &p) {
     this->dim = p.dim;
@@ -968,6 +1050,14 @@ void PSO::evaluate() {
             }
 
             scenario_.write_land_json(lc_x, replace_ending(land_filename, ".parquet", ".json"));
+        }else {
+            auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
+            std::filesystem::copy(base_land_bmp_file_,land_filename, std::filesystem::copy_options::overwrite_existing);
+
+            auto json_filename  = replace_ending(land_filename, ".parquet", ".json");
+            std::filesystem::copy(replace_ending(base_land_bmp_file_, ".parquet", ".json"), json_filename,std::filesystem::copy_options::overwrite_existing);
+            // Copy the base animal file to auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
+            std::cout << "Land Disabled file path:" << land_filename << std::endl;
         }
         if(is_animal_enabled_){
             auto animal_cost = scenario_.normalize_animal(x, animal_x); 
@@ -986,6 +1076,14 @@ void PSO::evaluate() {
                 //continue;
             }
             scenario_.write_animal_json(animal_x, replace_ending(animal_filename, ".parquet", ".json"));
+        }else{ 
+            auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
+            std::filesystem::copy(base_animal_bmp_file_,animal_filename, std::filesystem::copy_options::overwrite_existing);
+
+            auto json_filename  = replace_ending(animal_filename, ".parquet", ".json");
+            std::filesystem::copy(replace_ending(base_animal_bmp_file_, ".parquet", ".json"), json_filename,std::filesystem::copy_options::overwrite_existing);
+            // Copy the base animal file to auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
+            std::cout << "Animal Disabled file path:" << animal_filename << std::endl;
         }
         if(is_manure_enabled_){
             auto manure_cost = scenario_.normalize_manure(x, manure_x); 
@@ -1004,6 +1102,14 @@ void PSO::evaluate() {
                 //continue;
             }
             scenario_.write_manure_json(manure_x, replace_ending(manure_filename, ".parquet", ".json"));
+        }else{
+            auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet",emo_path, exec_uuid);
+            std::filesystem::copy(base_manure_bmp_file_, manure_filename,std::filesystem::copy_options::overwrite_existing);
+
+            auto json_filename  = replace_ending(manure_filename, ".parquet", ".json");
+            std::filesystem::copy(replace_ending(base_manure_bmp_file_, ".parquet", ".json"), json_filename,std::filesystem::copy_options::overwrite_existing);
+            std::cout << "Manure Disabled file path:" << manure_filename << std::endl;
+            // Copy the base manure file to auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", emo_path, exec_uuid);
         }
 
         if(flag){
