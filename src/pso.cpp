@@ -1053,10 +1053,6 @@ void PSO::evaluate() {
         }else {
             auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
             std::filesystem::copy(base_land_bmp_file_,land_filename, std::filesystem::copy_options::overwrite_existing);
-
-            auto json_filename  = replace_ending(land_filename, ".parquet", ".json");
-            std::filesystem::copy(replace_ending(base_land_bmp_file_, ".parquet", ".json"), json_filename,std::filesystem::copy_options::overwrite_existing);
-            // Copy the base animal file to auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
             std::cout << "Land Disabled file path:" << land_filename << std::endl;
         }
         if(is_animal_enabled_){
@@ -1077,24 +1073,12 @@ void PSO::evaluate() {
             }
             scenario_.write_animal_json(animal_x, replace_ending(animal_filename, ".parquet", ".json"));
         }else{ 
-            // auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
-            // std::filesystem::copy(base_animal_bmp_file_,animal_filename, std::filesystem::copy_options::overwrite_existing);
-
-            // auto json_filename  = replace_ending(animal_filename, ".parquet", ".json");
-            // std::filesystem::copy(replace_ending(base_animal_bmp_file_, ".parquet", ".json"), json_filename,std::filesystem::copy_options::overwrite_existing);
-            // // Copy the base animal file to auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
-            // std::cout << "Animal Disabled file path:" << animal_filename << std::endl;
             std::filesystem::path emo_path_obj(emo_path);
             std::filesystem::path exec_uuid_str(exec_uuid);
 
             // Handle animal files
             std::filesystem::path animal_filename = emo_path_obj / (exec_uuid_str.string() + "_impbmpsubmittedanimal.parquet");
             std::filesystem::copy(base_animal_bmp_file_, animal_filename, std::filesystem::copy_options::overwrite_existing);
-
-            std::filesystem::path animal_json_filename = std::filesystem::path(animal_filename).replace_extension(".json");
-            std::filesystem::path base_animal_json_file = std::filesystem::path(base_animal_bmp_file_).replace_extension(".json");
-
-            std::filesystem::copy(base_animal_json_file, animal_json_filename, std::filesystem::copy_options::overwrite_existing);
             std::cout << "Animal Disabled file path:" << animal_filename << std::endl;
         }
         if(is_manure_enabled_){
@@ -1115,24 +1099,13 @@ void PSO::evaluate() {
             }
             scenario_.write_manure_json(manure_x, replace_ending(manure_filename, ".parquet", ".json"));
         }else{
-            // auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet",emo_path, exec_uuid);
-            // std::filesystem::copy(base_manure_bmp_file_, manure_filename,std::filesystem::copy_options::overwrite_existing);
-
-            // auto json_filename  = replace_ending(manure_filename, ".parquet", ".json");
-            // std::filesystem::copy(replace_ending(base_manure_bmp_file_, ".parquet", ".json"), json_filename,std::filesystem::copy_options::overwrite_existing);
-
+           
             std::filesystem::path emo_path_obj(emo_path);
             std::filesystem::path exec_uuid_str(exec_uuid);
             std::filesystem::path manure_filename = emo_path_obj / (exec_uuid_str.string() + "_impbmpsubmittedmanuretransport.parquet");
 
             std::filesystem::copy(base_manure_bmp_file_, manure_filename, std::filesystem::copy_options::overwrite_existing);
-
-            std::filesystem::path json_filename = std::filesystem::path(manure_filename).replace_extension(".json");
-            std::filesystem::path base_json_file = std::filesystem::path(base_manure_bmp_file_).replace_extension(".json");
-
-            std::filesystem::copy(base_json_file, json_filename, std::filesystem::copy_options::overwrite_existing);
             std::cout << "Manure Disabled file path:" << manure_filename << std::endl;
-            // Copy the base manure file to auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", emo_path, exec_uuid);
         }
 
         if(flag){
