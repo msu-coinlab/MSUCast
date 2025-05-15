@@ -573,7 +573,7 @@ PSO& PSO::operator=(const PSO &p) {
 }
 
 PSO::~PSO() {
-    //delete_tmp_files();
+    //delete_tmp_eiles();
 }
 void PSO::delete_tmp_files(){
     int counter = 0;
@@ -1008,6 +1008,10 @@ void PSO::print() {
 }
 
 void PSO::evaluate() {
+
+
+    std::cout << " This is a test to see if one continaer can be build with out doing the whole thing" << std::endl; 
+
     std::vector<std::string> exec_uuid_vec;
     std::vector<double> total_cost_vec(nparts, 0.0);
     std::unordered_map<std::string, int> generation_uuid_idx;
