@@ -151,7 +151,7 @@ std::vector<std::string> RabbitMQClient::wait_for_all_data() {
 
     while(sent_list_.size() > 0) {
 
-        fmt::print("Remaining scenarios:  {}\n", sent_list_.size());
+        fmt::print("Remaining scenarios: {}\n", sent_list_.size());
         fmt::print("[*] Waiting for execution service: {} \n", emo_uuid_);
 
         auto envelope = channel->BasicConsumeMessage(consumer_tag);

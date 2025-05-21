@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/app_src/github/MSUCast/test/ipopt_json.cpp
+fmt/core.h
+-
+nlohmann/json.hpp
+-
+map
+-
+filesystem
+-
+fstream
+-
+iostream
+-
+boost/algorithm/string.hpp
+-
+

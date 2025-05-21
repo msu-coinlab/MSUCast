@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/merge_csv_files.dir/merge_csv_files.cpp.o -o merge_csv_files  -larrow -lparquet -lfmt -lpthread 

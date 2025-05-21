@@ -484,12 +484,14 @@ std::vector<std::tuple<int, int, int, int, int, double>> read_parquet_file(std::
 
 // add the file and dont forget the header 
 PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, 
-        const std::string& manure_nutrients_file, const std::string& base_land_bmp_file, const std::string& base_animal_bmp_file, const std::string& base_manure_bmp_file) {
+        const std::string& manure_nutrients_file, const std::string& base_land_bmp_file, const std::string& base_animal_bmp_file, const std::string& base_manure_bmp_file, const std::string& exec_uuid) {
     out_dir_= out_dir;
     is_ef_enabled_ = is_ef_enabled;
     is_lc_enabled_ = is_lc_enabled;
     is_animal_enabled_ = is_animal_enabled;
     is_manure_enabled_ = is_manure_enabled;
+    exec_uuid_ = exec_uuid;
+    emo_uuid_ = exec_uuid;
     ef_size_ = 0;
     lc_size_ = 0;
     animal_size_ = 0;
@@ -601,7 +603,6 @@ void PSO::delete_tmp_files(){
 
 
 void PSO::init_cast(const std::string& input_filename, const std::string& scenario_filename, const std::string& manure_nutrients_file) {
-    emo_uuid_ = xg::newGuid().str();
     fmt::print("emo_uuid: {}\n", emo_uuid_);
     std::string emo_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", emo_uuid_);
     std::unordered_map<std::string, std::tuple<int, double, double , double, double>> generation_fx;//key: UID, tuple: [idx, Nitrogen, Phosphorus, Sediments]

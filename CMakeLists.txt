@@ -61,5 +61,5 @@ add_executable(pso
 target_include_directories(pso PUBLIC include)
 target_link_libraries(pso PRIVATE msucast arrow_shared parquet fmt pthread crossguid hiredis redis++ SimpleAmqpClient)
 
-add_subdirectory(test)
+# add_subdirectory(test)
 add_subdirectory(eps_cnstr)

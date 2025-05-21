@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/scenario_test.dir/scenario_test.cpp.o -o scenario_test  ../libmsucast.a -larrow -lparquet -lfmt -lpthread /usr/local/lib/libcrossguid.a -lhiredis -lredis++ -lSimpleAmqpClient /usr/lib/x86_64-linux-gnu/libuuid.so /usr/lib/x86_64-linux-gnu/libarrow.so.1601.0.0 -ldl -lrt -pthread 

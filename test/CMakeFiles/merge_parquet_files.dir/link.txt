@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/merge_parquet_files.dir/merge_parquet_files.cpp.o CMakeFiles/merge_parquet_files.dir/__/src/misc_utilities.cpp.o -o merge_parquet_files  -larrow -lparquet -lfmt -lpthread 

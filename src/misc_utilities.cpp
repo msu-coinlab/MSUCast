@@ -113,7 +113,7 @@ std::unordered_map<std::string, double> read_loads(std::string loads_filename) {
     }
 
     void move_pf(const std::string& source_dir, const std::string& destination_dir, std::vector<std::string> pf_files) {
-        std::vector<std::string> source_files = {"_impbmpsubmittedland.json", "_impbmpsubmittedland.parquet", "_impbmpsubmittedanimal.json", "_impbmpsubmittedanimal.parquet", "_impbmpsubmittedmanuretransport.json", "_impbmpsubmittedmanuretransport.parquet", "_reportloads.csv", "_reportloads.parquet", "_costs.json", ".csv"};
+        std::vector<std::string> source_files = {"_impbmpsubmittedland.json", "_impbmpsubmittedland.parquet", "_impbmpsubmittedland_new_bmps.parquet",  "_impbmpsubmittedanimal.json", "_impbmpsubmittedanimal.parquet", "_impbmpsubmittedmanuretransport.json", "_impbmpsubmittedmanuretransport.parquet", "_reportloads.csv", "_reportloads.parquet", "_costs.json", ".csv"};
         try {
             // Create the destination directory if it doesn't exist
             if (!fs::exists(destination_dir)) {
