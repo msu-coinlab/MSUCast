@@ -1186,20 +1186,14 @@ int Scenario::write_land(
         RowIndex
         ] = bmp;
 
-        // your existing lookup on the “lrseg” key:
-        auto [fips, state, county, geography] = lrseg_dict_[BmpSubmittedId];
-
-        // your existing load‐source‐group lookup:
-        int load_src_grp = u_u_group_dict[LoadSourceGroupId];
-
         os
         << /* row number */        counter + 1
         << /* agency */            AgencyId
         << /* state UID */         StateUniqueIdentifier
         << /* state id */          StateId
         << /* bmp id */            BmpId
-        << /* geography from dict*/geography
-        << /* load source grp */   load_src_grp
+        << /* geography from dict*/GeographyId
+        << /* load source grp */   LoadSourceGroupId
         << /* unit id */           UnitId
         << /* amount */            Amount
         << /* validity */          IsValid
