@@ -341,73 +341,115 @@ namespace {
 }
 
 
-std::vector<std::tuple<int, int, int, int, double>> read_parquet_file_land(std::string file_name) {
-    using arrow::default_memory_pool;
-    using parquet::arrow::FileReader;
-  
-    // 1) Open the file
-    std::shared_ptr<arrow::io::ReadableFile> infile;
-    PARQUET_ASSIGN_OR_THROW(
-      infile,
-      arrow::io::ReadableFile::Open(file_name, default_memory_pool())
-    );
-  
-    // 2) Open a ParquetFileReader
-    std::unique_ptr<FileReader> reader;
-    PARQUET_THROW_NOT_OK(
-      parquet::arrow::OpenFile(infile, default_memory_pool(), &reader)
-    );
-  
-    // 3) Read whole file into a Table
-    std::shared_ptr<arrow::Table> table;
-    PARQUET_THROW_NOT_OK(reader->ReadTable(&table));
-  
-    int64_t nrows = table->num_rows();
-    if (nrows == 0) return {};
-  
-    // 4) Get column arrays - use proper casting
-    auto col0 = std::static_pointer_cast<arrow::Int32Array>(table->column(0)->chunk(0));
-    auto col1 = std::static_pointer_cast<arrow::Int32Array>(table->column(1)->chunk(0));
-    auto col2 = std::static_pointer_cast<arrow::Int32Array>(table->column(2)->chunk(0));
-    auto col3 = std::static_pointer_cast<arrow::Int32Array>(table->column(3)->chunk(0));
-    auto col4 = std::static_pointer_cast<arrow::DoubleArray>(table->column(4)->chunk(0));
-  
-    // Handle multiple chunks if necessary
-    if (table->column(0)->num_chunks() > 1 || 
-        table->column(1)->num_chunks() > 1 || 
-        table->column(2)->num_chunks() > 1 || 
-        table->column(3)->num_chunks() > 1 || 
-        table->column(4)->num_chunks() > 1) {
-      
-        std::shared_ptr<arrow::Array> raw0, raw1, raw2, raw3, raw4;
-        PARQUET_ASSIGN_OR_THROW(raw0, arrow::Concatenate(table->column(0)->chunks(), default_memory_pool()));
-        PARQUET_ASSIGN_OR_THROW(raw1, arrow::Concatenate(table->column(1)->chunks(), default_memory_pool()));
-        PARQUET_ASSIGN_OR_THROW(raw2, arrow::Concatenate(table->column(2)->chunks(), default_memory_pool()));
-        PARQUET_ASSIGN_OR_THROW(raw3, arrow::Concatenate(table->column(3)->chunks(), default_memory_pool()));
-        PARQUET_ASSIGN_OR_THROW(raw4, arrow::Concatenate(table->column(4)->chunks(), default_memory_pool()));
-      
-      col0 = std::static_pointer_cast<arrow::Int32Array>(raw0);
-      col1 = std::static_pointer_cast<arrow::Int32Array>(raw1);
-      col2 = std::static_pointer_cast<arrow::Int32Array>(raw2);
-      col3 = std::static_pointer_cast<arrow::Int32Array>(raw3);
-      col4 = std::static_pointer_cast<arrow::DoubleArray>(raw4);
-    }
-  
-    // 5) Pull out row values into your vector of tuples
-    std::vector<std::tuple<int, int, int, int, double>> result;
-    result.reserve(nrows);
-    for (int64_t i = 0; i < nrows; ++i) {
-      result.emplace_back(
-        col0->Value(i),
-        col1->Value(i),
-        col2->Value(i),
-        col3->Value(i),
-        col4->Value(i)
+// Define a plain‐old‐data struct matching your schema
+struct BmpRowLand {
+  int32_t  BmpSubmittedId;
+  int32_t  AgencyId;
+  std::string StateUniqueIdentifier;
+  int32_t  StateId;
+  int32_t  BmpId;
+  int32_t  GeographyId;
+  int32_t  LoadSourceGroupId;
+  int32_t  UnitId;
+  double   Amount;
+  bool     IsValid;
+  std::string ErrorMessage;
+  int32_t  RowIndex;
+};
+
+std::vector<BmpRowLand> read_parquet_file_land(const std::string& file_name) {
+  // 1) Open file
+  arrow::MemoryPool* pool = arrow::default_memory_pool();
+  std::shared_ptr<arrow::io::ReadableFile> infile;
+  PARQUET_ASSIGN_OR_THROW(
+    infile,
+    arrow::io::ReadableFile::Open(file_name, pool)
+  );
+
+  // 2) Open Parquet reader
+  std::unique_ptr<parquet::arrow::FileReader> reader;
+  PARQUET_THROW_NOT_OK(
+    parquet::arrow::OpenFile(infile, pool, &reader)
+  );
+
+  // 3) Read entire file into a Table
+  std::shared_ptr<arrow::Table> table;
+  PARQUET_THROW_NOT_OK(reader->ReadTable(&table));
+  const int64_t num_rows = table->num_rows();
+  if (num_rows == 0) return {};
+
+  // Helper to get a single (possibly concatenated) Array by column name
+  auto get_array = [&](const std::string& name) -> std::shared_ptr<arrow::Array> {
+    int idx = table->schema()->GetFieldIndex(name);
+    if (idx < 0) throw std::runtime_error("Column not found: " + name);
+    auto col = table->column(idx);
+    if (col->num_chunks() == 1) {
+      return col->chunk(0);
+    } else {
+      std::shared_ptr<arrow::Array> concatenated;
+      PARQUET_ASSIGN_OR_THROW(
+        concatenated,
+        arrow::Concatenate(col->chunks(), pool)
       );
+      return concatenated;
     }
-  
-    return result;
+  };
+
+  // 4) Extract each column
+  auto arr0  = get_array("BmpSubmittedId");
+  auto arr1  = get_array("AgencyId");
+  auto arr2  = get_array("StateUniqueIdentifier");
+  auto arr3  = get_array("StateId");
+  auto arr4  = get_array("BmpId");
+  auto arr5  = get_array("GeographyId");
+  auto arr6  = get_array("LoadSourceGroupId");
+  auto arr7  = get_array("UnitId");
+  auto arr8  = get_array("Amount");
+  auto arr9  = get_array("IsValid");
+  auto arr10 = get_array("ErrorMessage");
+  auto arr11 = get_array("RowIndex");
+
+  // 5) Cast to the right Array types
+  auto col0  = std::static_pointer_cast<arrow::Int32Array>(arr0);
+  auto col1  = std::static_pointer_cast<arrow::Int32Array>(arr1);
+  auto col2  = std::static_pointer_cast<arrow::StringArray>(arr2);
+  auto col3  = std::static_pointer_cast<arrow::Int32Array>(arr3);
+  auto col4  = std::static_pointer_cast<arrow::Int32Array>(arr4);
+  auto col5  = std::static_pointer_cast<arrow::Int32Array>(arr5);
+  auto col6  = std::static_pointer_cast<arrow::Int32Array>(arr6);
+  auto col7  = std::static_pointer_cast<arrow::Int32Array>(arr7);
+  auto col8  = std::static_pointer_cast<arrow::DoubleArray>(arr8);
+  auto col9  = std::static_pointer_cast<arrow::BooleanArray>(arr9);
+  auto col10 = std::static_pointer_cast<arrow::StringArray>(arr10);
+  auto col11 = std::static_pointer_cast<arrow::Int32Array>(arr11);
+
+  // 6) Pull out each row into your vector
+  std::vector<BmpRowLand> result;
+  result.reserve(num_rows);
+  for (int64_t i = 0; i < num_rows; ++i) {
+    BmpRowLand row;
+    row.BmpSubmittedId       = col0->Value(i);
+    row.AgencyId             = col1->Value(i);
+    row.StateUniqueIdentifier = col2->GetString(i);
+    row.StateId              = col3->Value(i);
+    row.BmpId                = col4->Value(i);
+    row.GeographyId          = col5->Value(i);
+    row.LoadSourceGroupId    = col6->Value(i);
+    row.UnitId               = col7->Value(i);
+    row.Amount               = col8->Value(i);
+    row.IsValid              = col9->Value(i);
+    // handle nullable ErrorMessage
+    row.ErrorMessage         = col10->IsNull(i) 
+                               ? std::string("") 
+                               : col10->GetString(i);
+    row.RowIndex             = col11->Value(i);
+    result.push_back(std::move(row));
+  }
+
+  return result;
 }
+
+
 std::vector<std::tuple<int, int, int, int, int, double>> read_parquet_file(std::string file_name) {
     using arrow::default_memory_pool;
     using parquet::arrow::FileReader;
@@ -519,6 +561,7 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     base_animal_bmp_inputs_ = read_parquet_file(base_animal_bmp_file);
     base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
 }
+
 PSO::PSO(const PSO &p) {
     this->dim = p.dim;
     this->nparts = p.nparts;

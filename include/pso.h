@@ -16,6 +16,22 @@ using json = nlohmann::json;
 
  * Particle Swarm Optimization class
  */
+ struct BmpRowLand {
+  int32_t  BmpSubmittedId;
+  int32_t  AgencyId;
+  std::string StateUniqueIdentifier;
+  int32_t  StateId;
+  int32_t  BmpId;
+  int32_t  GeographyId;
+  int32_t  LoadSourceGroupId;
+  int32_t  UnitId;
+  double   Amount;
+  bool     IsValid;
+  std::string ErrorMessage;
+  int32_t  RowIndex;
+};
+
+// declaration of your reader
 class PSO {
 public:
 
@@ -91,7 +107,7 @@ private:
     std::string out_dir_;
     Execute execute;
     std::vector<std::vector<std::string>> exec_uuid_log_;
-    std::vector<std::tuple<int, int, int, int, double>> base_land_bmp_inputs_;
+    std::vector<BmpRowLand> base_land_bmp_inputs_;
     std::vector<std::tuple<int, int, int, int, int, double>> base_animal_bmp_inputs_;
     std::vector<std::tuple<int, int, int, int, int, double>> base_manure_bmp_inputs_;
 

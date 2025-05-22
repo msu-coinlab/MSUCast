@@ -1155,26 +1155,46 @@ int Scenario::write_land(
 
     int counter = 0;
     std::cout << "Adding the base BMP inputs" << std::endl;
-    for (const auto& entry : base_land_bmp_inputs) {
-        auto [lrseg, agency, load_src, bmp_idx, amount] = entry;
-        auto [fips, state, county, geography] = lrseg_dict_[lrseg];
-        int load_src_grp = u_u_group_dict[load_src];
-        int unit = 1; //acres
+    for (const auto& bmp : base_land_bmp_inputs) {
+        // unpack all 12 fields from BmpRow:
+        const auto& [
+        BmpSubmittedId,
+        AgencyId,
+        StateUniqueIdentifier,
+        StateId,
+        BmpId,
+        GeographyId,
+        LoadSourceGroupId,
+        UnitId,
+        Amount,
+        IsValid,
+        ErrorMessage,
+        RowIndex
+        ] = bmp;
+
+        // your existing lookup on the “lrseg” key:
+        auto [fips, state, county, geography] = lrseg_dict_[BmpSubmittedId];
+
+        // your existing load‐source‐group lookup:
+        int load_src_grp = u_u_group_dict[LoadSourceGroupId];
+
         os
-            <<counter+1
-            <<agency
-            <<fmt::format("SU{}",counter)
-            <<state
-            <<bmp_idx
-            <<geography
-            <<load_src_grp
-            <<unit
-            <<amount
-            <<true
-            <<""
-            <<counter+1
-            <<parquet::EndRow;
-        counter++;
+        << /* row number */        counter + 1
+        << /* agency */            AgencyId
+        << /* some tag */          fmt::format("SU{}", counter)
+        << /* state UID */         StateUniqueIdentifier
+        << /* state id */          StateId
+        << /* bmp id */            BmpId
+        << /* geography from dict*/geography
+        << /* load source grp */   load_src_grp
+        << /* unit id */           UnitId
+        << /* amount */            Amount
+        << /* validity */          IsValid
+        << /* error msg */         ErrorMessage
+        << /* row index */         RowIndex
+        << parquet::EndRow;
+
+        ++counter;
     }
 
     std::cout << "Adding the new BMP inputs" << std::endl;
