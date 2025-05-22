@@ -1195,7 +1195,6 @@ int Scenario::write_land(
         os
         << /* row number */        counter + 1
         << /* agency */            AgencyId
-        << /* some tag */          fmt::format("SU{}", counter)
         << /* state UID */         StateUniqueIdentifier
         << /* state id */          StateId
         << /* bmp id */            BmpId
