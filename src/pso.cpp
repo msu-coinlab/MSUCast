@@ -342,20 +342,20 @@ namespace {
 
 
 // Define a plain‐old‐data struct matching your schema
-struct BmpRowLand {
-  int32_t  BmpSubmittedId;
-  int32_t  AgencyId;
-  std::string StateUniqueIdentifier;
-  int32_t  StateId;
-  int32_t  BmpId;
-  int32_t  GeographyId;
-  int32_t  LoadSourceGroupId;
-  int32_t  UnitId;
-  double   Amount;
-  bool     IsValid;
-  std::string ErrorMessage;
-  int32_t  RowIndex;
-};
+// struct BmpRowLand {
+//   int32_t  BmpSubmittedId;
+//   int32_t  AgencyId;
+//   std::string StateUniqueIdentifier;
+//   int32_t  StateId;
+//   int32_t  BmpId;
+//   int32_t  GeographyId;
+//   int32_t  LoadSourceGroupId;
+//   int32_t  UnitId;
+//   double   Amount;
+//   bool     IsValid;
+//   std::string ErrorMessage;
+//   int32_t  RowIndex;
+// };
 
 std::vector<BmpRowLand> read_parquet_file_land(const std::string& file_name) {
   // 1) Open file

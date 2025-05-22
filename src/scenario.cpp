@@ -1052,20 +1052,20 @@ size_t Scenario::write_manure_json(const std::vector<std::tuple<int, int, int, i
 }
 
 // Define a plain‐old‐data struct matching your schema
-struct BmpRowLand {
-  int32_t  BmpSubmittedId;
-  int32_t  AgencyId;
-  std::string StateUniqueIdentifier;
-  int32_t  StateId;
-  int32_t  BmpId;
-  int32_t  GeographyId;
-  int32_t  LoadSourceGroupId;
-  int32_t  UnitId;
-  double   Amount;
-  bool     IsValid;
-  std::string ErrorMessage;
-  int32_t  RowIndex;
-};
+// struct BmpRowLand {
+//   int32_t  BmpSubmittedId;
+//   int32_t  AgencyId;
+//   std::string StateUniqueIdentifier;
+//   int32_t  StateId;
+//   int32_t  BmpId;
+//   int32_t  GeographyId;
+//   int32_t  LoadSourceGroupId;
+//   int32_t  UnitId;
+//   double   Amount;
+//   bool     IsValid;
+//   std::string ErrorMessage;
+//   int32_t  RowIndex;
+// };
 
 int Scenario::write_land(
         const std::vector<std::tuple<int, int, int, int, double>>& lc_x,
