@@ -1250,12 +1250,7 @@ void EPA_NLP::save_files2(
 
 }
 
-void EPA_NLP::write_files(
-        Index n,
-        const Number *x,
-        Index m,
-        Number obj_value
-) {
+void EPA_NLP::write_files(Index n,const Number *x, Index m, Number obj_value) {
 
     bool new_x = true;
     Number *g_constr = new Number[ncons_];

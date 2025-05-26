@@ -107,7 +107,9 @@ int main (int argc, char *argv[]) {
         exec_uuid = argv[12];
     } 
     
-        
+    // Print stuff to the logs 
+    auto  logPath = fmt::format("{}/running.log", dir_output);
+    std::freopen(logPath.c_str(), "w", stdout); 
     
 
     PSO pso(nparts, nobjs, max_iter, w, c1, c2, lb, ub, input_filename, scenario_filename, dir_output, is_ef_enabled, is_lc_enabled, is_animal_enabled, is_manure_enabled, 

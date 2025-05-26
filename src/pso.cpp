@@ -771,7 +771,7 @@ void PSO::exec_ipopt_all_sols(){
     min_idx = indices[0];
     max_idx = indices[indices.size() - 1];
     mid_idx = indices[indices.size() / 2];
-    std::vector<int> idx_vec = {min_idx, mid_idx, max_idx};
+    std::vector<int> idx_vec = {min_idx, mid_idx, max_idx}; 
     std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}", emo_uuid_);
     std::string ipopt_path = fmt::format("{}/ipopt", path);
     int counter = 0;
@@ -783,11 +783,12 @@ void PSO::exec_ipopt_all_sols(){
         auto parent_uuid = gbest_[idx].get_uuid();
         auto parent_uuid_path = fmt::format("{}/{}", path, parent_uuid);
 
+
+        // Make the cost.json file and move to parent uuid path 
         json costs_json_file;
         costs_json_file["lc_cost"] = lc_cost;
         costs_json_file["animal_cost"] = animal_cost;
         costs_json_file["manure_cost"] = manure_cost;
-
         misc_utilities::write_json_file(fmt::format("{}_costs.json", parent_uuid_path), costs_json_file);
 
         //execute.set_files(emo_uuid_, in_file);
@@ -798,6 +799,8 @@ void PSO::exec_ipopt_all_sols(){
         fmt::print("======================== best_lc_cost_: {}\n", lc_cost);
         fmt::print("======================== best_animal_cost_: {}\n", animal_cost);
         fmt::print("======================== best_manure_cost_: {}\n", manure_cost);
+       
+       // Not used was probs used for logging
         std::string postfix;
         if (idx == min_idx) postfix = "min";
         else if (idx == max_idx) postfix = "max";
@@ -806,10 +809,11 @@ void PSO::exec_ipopt_all_sols(){
         std::string report_loads_path = fmt::format("{}_reportloads.csv", parent_uuid_path);
         fmt::print("===================================================================================== Scenario_id: {}\n", scenario_.get_scenario_id());
 
-       execute.get_json_scenario( scenario_.get_scenario_id(), report_loads_path, parent_uuid_path);
+       execute.get_json_scenario(scenario_.get_scenario_id(), report_loads_path, parent_uuid_path);
 
         auto base_scenario_filename = fmt::format("{}_reportloads_processed.json", parent_uuid_path);
         fmt::print("base_scenario_filename: {}\n", base_scenario_filename);
+        //std::cout << "base_scenario_filename: " <<  base_scenario_filename << std::endl;
 
 
         //misc_utilities::ls_path(path);
@@ -827,6 +831,7 @@ void PSO::exec_ipopt_all_sols(){
         auto reportloads_json_path = base_scenario_filename;
         auto scenario_json_path = scenario_filename_;
         fmt::print("parent_uuid_path: {}", parent_uuid_path);
+        //std::cout << "parent_uuid_path:" << parent_uuid_path << std:endl;
 
         execute.execute_new(
                 base_scenario_filename,
@@ -992,7 +997,7 @@ void PSO::exec_ipopt(){
     //OPT4CAST_RUN_EPS_CNSTR_PATH = os.environ.get('OPT4CAST_RUN_EPS_CNSTR_PATH', '/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr')
 
 
-    std::string  in_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/reportloads_processed.json"; 
+    std::string in_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/reportloads_processed.json"; 
     std::string out_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/scenario.json";
     std::string uuids = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/uuids.json";
     "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/front";

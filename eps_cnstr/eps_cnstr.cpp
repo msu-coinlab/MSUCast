@@ -108,7 +108,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
 
         misc_utilities::merge_json_files(current_land_json_path,
-                        parent_land_json_path, 
+                        parent_land_json_path,  
                         dst_land_json_path);
 
         auto current_cost_path = fmt::format("{}/ipopt_tmp/{}_costs.json", base_path, i);
