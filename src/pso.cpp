@@ -844,6 +844,7 @@ void PSO::exec_ipopt_all_sols(){
                 parent_uuid_path 
             );
         fmt::print("before move_files\n");
+        std::cout << 'Parent uuid path: ' << parent_uuid_path << '\n' << "ipop_path " << ipopt_path << '\n' <<endl;
         misc_utilities::move_files(parent_uuid_path, ipopt_path, nsteps, counter*nsteps);
 
 
