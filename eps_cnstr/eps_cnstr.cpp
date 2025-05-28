@@ -64,7 +64,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
     fmt::print("**************************************** \n");
 
     //auto uuid = mynlp->get_uuid();
-    auto uuid = emo_path.substr(emo_path.find_last_of("/") + 1)
+    auto uuid = emo_path.substr(emo_path.find_last_of("/") + 1);
     fmt::print("eps-uuid: {}\n", uuid);
 
 
