@@ -90,7 +90,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
         auto parent_land_path = fmt::format("{}_impbmpsubmittedland.parquet", parent_uuid_path);
         auto current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
-        auto dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", base_path, uuids[i]);
+        auto dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", parent_uuid_path, uuids[i]);
 
 
         std::vector<std::tuple<int, int, int, int, int, int, double> > parent_land = mynlp->read_land(parent_land_path);
@@ -100,7 +100,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
         auto parent_land_json_path = fmt::format("{}_impbmpsubmittedland.json", parent_uuid_path);
         auto current_land_json_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.json");
-        auto dst_land_json_path = fmt::format("{}/{}_impbmpsubmittedland.json", base_path, uuids[i]);
+        auto dst_land_json_path = fmt::format("{}/{}_impbmpsubmittedland.json", parent_uuid_path, uuids[i]);
 
         /*
         json parent_land_json = misc_utilities::read_json_file(parent_land_json_path);
@@ -114,7 +114,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
         auto current_cost_path = fmt::format("{}/ipopt_tmp/{}_costs.json", base_path, i);
         auto parent_cost_path = fmt::format("{}_costs.json", parent_uuid_path);
-        auto dst_cost_path = fmt::format("{}/{}_costs.json", base_path, uuids[i]);
+        auto dst_cost_path = fmt::format("{}/{}_costs.json", parent_uuid_path, uuids[i]);
 
         auto parent_cost_json = misc_utilities::read_json_file(parent_cost_path);
         auto current_cost_json = misc_utilities::read_json_file(current_cost_path);
