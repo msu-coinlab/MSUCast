@@ -27,7 +27,8 @@ class Execute {
             double ipopt_reduction, //0.30
             int nsteps,
             int evaluate_cast,
-            std::string original_base_scenario
+            std::string original_base_scenario,
+            std::string emo_path
         ); 
 
         void get_json_scenario( size_t sinfo, const std::string& report_loads_path, const std::string& output_path_prefix);

@@ -58,12 +58,13 @@ bool EpsConstraint::evaluate(double reduction, int current_iteration=0) {
 }
 
 
-bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path){
+bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path, std::string& emo_path){
     fmt::print("**************************************** \n");
     fmt::print("In constr_eval\n");
     fmt::print("**************************************** \n");
 
-    auto uuid = mynlp->get_uuid();
+    //auto uuid = mynlp->get_uuid();
+    auto uuid = path.substr(emo_path.find_last_of("/") + 1)
     fmt::print("eps-uuid: {}\n", uuid);
 
 

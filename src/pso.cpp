@@ -833,16 +833,17 @@ void PSO::exec_ipopt_all_sols(){
         fmt::print("parent_uuid_path: {}", parent_uuid_path);
         //std::cout << "parent_uuid_path:" << parent_uuid_path << std:endl;
 
-        // execute.execute_new(
-        //         base_scenario_filename,
-        //         scenario_filename_,
-        //         parent_uuid_path,
-        //         pollutant_idx, //0
-        //         ipopt_reduction, //0.30
-        //         nsteps,//10
-        //         1,
-        //         parent_uuid_path 
-        //     );
+        execute.execute_new(
+                base_scenario_filename,
+                scenario_filename_,
+                parent_uuid_path,
+                pollutant_idx, //0
+                ipopt_reduction, //0.30
+                nsteps,//10
+                1,
+                parent_uuid_path,
+                path 
+            );
 
         fmt::print("before move_files\n");
         std::cout << "Parent uuid path: " << parent_uuid_path << '\n' << "ipop_path " << ipopt_path << '\n' <<std::endl;
@@ -1078,6 +1079,7 @@ void PSO::evaluate() {
         const auto& x = particles[i].get_x();
         std::string exec_uuid = xg::newGuid().str();
         particles[i].set_uuid(exec_uuid);
+        std::cout << "=========================================PSO emo_uuid_ and exec_uuid , " << emo_uuid_ << " " << exec_uuid << std::endl; 
         bool flag = true;
         if(is_ef_enabled_){
             //total_cost += scenario_.normalize_ef(x, ef_x);

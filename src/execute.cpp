@@ -205,14 +205,15 @@ void Execute::execute_new(
         int pollutant_idx, //0
         double ipopt_reduction, //0.30
         int nsteps,
-        int evaluate_cast, // 1 IDK why but it is -Auden 
-        std::string original_base_scenario
+        int evaluate_cast, 
+        std::string original_base_scenario,
+        std::string emo_path 
         ) {
     std::string env_var = "OPT4CAST_EPS_CNSTR_PATH";
     std::string EPS_CNSTR_PATH = misc_utilities::get_env_var("OPT4CAST_RUN_EPS_CNSTR_PATH", "/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr");
     // const std::string& emo_uuid, 
     // std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}/config/", emo_uuid);
-    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {}", 
+    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {} {}", 
                 EPS_CNSTR_PATH, 
                 base_scenario,
                 scenario,
@@ -221,7 +222,8 @@ void Execute::execute_new(
                 ipopt_reduction,
                 nsteps,
                 evaluate_cast,
-                original_base_scenario
+                original_base_scenario,
+                emo_path
                 );
 
     fmt::print("exec_string: {}\n", exec_string);
