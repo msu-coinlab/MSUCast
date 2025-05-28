@@ -809,7 +809,7 @@ void PSO::exec_ipopt_all_sols(){
         std::string report_loads_path = fmt::format("{}_reportloads.csv", parent_uuid_path);
         fmt::print("===================================================================================== Scenario_id: {}\n", scenario_.get_scenario_id());
 
-       execute.get_json_scenario(scenario_.get_scenario_id(), report_loads_path, parent_uuid_path);
+        execute.get_json_scenario(scenario_.get_scenario_id(), report_loads_path, parent_uuid_path);
 
         auto base_scenario_filename = fmt::format("{}_reportloads_processed.json", parent_uuid_path);
         fmt::print("base_scenario_filename: {}\n", base_scenario_filename);
@@ -833,18 +833,19 @@ void PSO::exec_ipopt_all_sols(){
         fmt::print("parent_uuid_path: {}", parent_uuid_path);
         //std::cout << "parent_uuid_path:" << parent_uuid_path << std:endl;
 
-        execute.execute_new(
-                base_scenario_filename,
-                scenario_filename_,
-                parent_uuid_path,
-                pollutant_idx, //0
-                ipopt_reduction, //0.30
-                nsteps,//10
-                1,
-                parent_uuid_path 
-            );
+        // execute.execute_new(
+        //         base_scenario_filename,
+        //         scenario_filename_,
+        //         parent_uuid_path,
+        //         pollutant_idx, //0
+        //         ipopt_reduction, //0.30
+        //         nsteps,//10
+        //         1,
+        //         parent_uuid_path 
+        //     );
+
         fmt::print("before move_files\n");
-        std::cout << 'Parent uuid path: ' << parent_uuid_path << '\n' << "ipop_path " << ipopt_path << '\n' <<std::endl;
+        std::cout << "Parent uuid path: " << parent_uuid_path << '\n' << "ipop_path " << ipopt_path << '\n' <<std::endl;
         misc_utilities::move_files(parent_uuid_path, ipopt_path, nsteps, counter*nsteps);
 
 
@@ -877,7 +878,7 @@ void PSO::exec_ipopt_all_sols(){
     std::string pf_path = fmt::format("{}/front", path);
     std::string csv_path = fmt::format("{}/front/pareto_front.txt", path);
 
-        fmt::print("before find pareto frontfiles \n");
+        fmt::print("before find pareto  \n");
     std::vector<std::string> pf_files = findParetoFrontFiles(objectives, directory);
     misc_utilities::move_pf(ipopt_path, pf_path, pf_files);
 
