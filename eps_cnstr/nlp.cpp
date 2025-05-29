@@ -112,7 +112,7 @@ void from_json(const json &j, var_t &p) {
 
 // constructor 63 0.9 0 1 0
 //
-EPA_NLP::EPA_NLP(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx,std::string& uuid ){
+EPA_NLP::EPA_NLP(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, std::string& uuid ){
     uuid_ = uuid; 
     this->path_out_ = path_out;
     load(base_scenario_json, scenario_json);
@@ -1375,6 +1375,8 @@ void EPA_NLP::finalize_solution(
     save_files2(n, x);
 
     auto uuid = get_uuid();
+    std::cout << "Base UUID: " << uuid << std::endl;
+    std::cout << "Base Path: " << base_path << std::endl;
 
     auto base_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", uuid);
     misc_utilities::mkdir(fmt::format("{}/ipopt_tmp", base_path));

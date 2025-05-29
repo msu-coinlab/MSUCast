@@ -30,7 +30,7 @@ EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenari
     evaluate_cast_ = evaluate_cast;
     
     auto uuid = emo_path.substr(emo_path.find_last_of("/") + 1);
-    mynlp = new EPA_NLP(base_scenario_json, scenario_json, path_out, pollutant_idx,uuid);
+    mynlp = new EPA_NLP(base_scenario_json, scenario_json, path_out, pollutant_idx, uuid);
     app = IpoptApplicationFactory();
 }
 
