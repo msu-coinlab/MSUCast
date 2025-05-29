@@ -113,7 +113,7 @@ void from_json(const json &j, var_t &p) {
 // constructor 63 0.9 0 1 0
 //
 EPA_NLP::EPA_NLP(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx,std::string& uuid ){
-    uuid_ = uuid 
+    uuid_ = uuid; 
     this->path_out_ = path_out;
     load(base_scenario_json, scenario_json);
     this-> pollutant_idx = pollutant_idx;
