@@ -1330,8 +1330,11 @@ void EPA_NLP::write_files(Index n,const Number *x, Index m, Number obj_value) {
 
     std::ofstream file3(filename);
 
+    
     file3.precision(10);
+    file3 << "Base uuid " << uuid_ << std::endl; 
     file3 << "Bmp_id,Acres,Cost" << std::endl;
+
     for (auto const&[key, sum]: bmp_sum) {
         file3 << key << "," << sum << "," <<  bmp_cost_[key] * sum <<  '\n';
     }
