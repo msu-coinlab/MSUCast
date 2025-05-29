@@ -23,9 +23,9 @@ class EpsConstraint {
     //EPA_NLP *mynlp;
 public:
 
-    EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast);
+    EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast, std::string& emo_path);
 
-    bool constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path, std::string& emo_path);
+    bool constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path);
     bool evaluate(double, int);
 
     std::vector<std::string> send_files(const std::string& scenario_data, const std::string& uuid, const std::vector<std::string>& uuids);

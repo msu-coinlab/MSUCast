@@ -31,7 +31,7 @@ public:
     bool has_content;
    /** Default constructor */
 
-    EPA_NLP(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx);
+   EPA_NLP(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, std::string& uuid);
    /** Default destructor */
    virtual ~EPA_NLP();
 

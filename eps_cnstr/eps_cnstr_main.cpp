@@ -112,8 +112,8 @@ int main(
     }
     */
     if (option == 1) { //ipopt Opt3
-        EpsConstraint eps_constr(base_scenario_json, scenario_json, path_out, pollutant_idx, evaluate_cast);
-        eps_constr.constr_eval(reduction, nsteps, uuids, parent_uuid_path, emo_path);
+        EpsConstraint eps_constr(base_scenario_json, scenario_json, path_out, pollutant_idx, evaluate_cast, emo_path);
+        eps_constr.constr_eval(reduction, nsteps, uuids, parent_uuid_path);
     }
     /*
     if (option == 6) { //ipopt Opt3

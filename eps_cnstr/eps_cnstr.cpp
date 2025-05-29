@@ -13,8 +13,9 @@
 
 namespace fs = std::filesystem;
 
-EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast){ 
-    path_out_ = path_out;
+EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast,std::string& emo_path){ 
+    path_out_ = path_out; 
+    //uuid_ = emo_path.substr(emo_path.find_last_of("/") + 1);
     // Check if the directory exists
     if (!fs::exists(path_out)) {
         // Create the directory and any necessary parent directories
@@ -27,8 +28,9 @@ EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenari
         }
     }
     evaluate_cast_ = evaluate_cast;
-
-    mynlp = new EPA_NLP(base_scenario_json, scenario_json, path_out, pollutant_idx);
+    
+    uuid = emo_path.substr(emo_path.find_last_of("/") + 1);
+    mynlp = new EPA_NLP(base_scenario_json, scenario_json, path_out, pollutant_idx,uuid);
     app = IpoptApplicationFactory();
 }
 
@@ -58,13 +60,13 @@ bool EpsConstraint::evaluate(double reduction, int current_iteration=0) {
 }
 
 
-bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path, std::string& emo_path){
+bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path){
     fmt::print("**************************************** \n");
     fmt::print("In constr_eval\n");
     fmt::print("**************************************** \n");
 
-    //auto uuid = mynlp->get_uuid();
-    auto uuid = emo_path.substr(emo_path.find_last_of("/") + 1);
+    auto uuid = mynlp->get_uuid();
+    //auto uuid = uuid_;
     fmt::print("eps-uuid: {}\n", uuid);
 
     auto scenario_data = mynlp->get_scenario_data();
