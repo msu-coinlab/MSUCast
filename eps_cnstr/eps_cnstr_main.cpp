@@ -87,7 +87,8 @@ int main(
     }
 
     for (int i = 0; i < nsteps; i++) {
-        uuids.push_back(std::string("eps-csnt-") + xg::newGuid().str());
+        // uuids.push_back(std::string("eps-csnt-") + xg::newGuid().str());
+        uuids.push_back(xg::newGuid().str());
     }
 
     
