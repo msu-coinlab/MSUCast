@@ -67,17 +67,12 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
     auto uuid = emo_path.substr(emo_path.find_last_of("/") + 1);
     fmt::print("eps-uuid: {}\n", uuid);
 
-
     auto scenario_data = mynlp->get_scenario_data();
-
-
     double step_size = (double)reduction/nsteps;
     auto base_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", uuid);
     misc_utilities::mkdir(fmt::format("{}/ipopt_tmp", base_path));
     //auto [parent_path_part, parent_uuid_part] = misc_utilities::extract_path_and_id(parent_uuid_path);
     //I want to have a dictionary with a uuid as key, and an integer (i) as value;
-
-    misc_utilities::mkdir(fmt::format("{}/ipopt_tmp", base_path));
     for (int i(0); i< nsteps; ++i) {
         double lower_bound = step_size*(i+1);
         auto result = evaluate(lower_bound, i);

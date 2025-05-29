@@ -918,7 +918,7 @@ void PSO::evaluate_ipopt_sols(const std::string& sub_dir, const std::string& ipo
         }
         combined.insert(combined.end(), parcel_list.begin(), parcel_list.end());
 
-        std::string exec_uuid = xg::newGuid().str();
+        std::string exec_uuid =xg::newGuid().str();
         exec_uuid_vec.emplace_back(exec_uuid);
         auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
         scenario_.write_land(combined, land_filename, base_land_bmp_inputs_);
@@ -1077,7 +1077,7 @@ void PSO::evaluate() {
         double total_cost = 0.0;
 
         const auto& x = particles[i].get_x();
-        std::string exec_uuid = xg::newGuid().str();
+        std::string exec_uuid = std::string("PSO-exec-uuid-") + xg::newGuid().str();
         particles[i].set_uuid(exec_uuid);
         std::cout << "=========================================PSO emo_uuid_ and exec_uuid , " << emo_uuid_ << " " << exec_uuid << std::endl; 
         bool flag = true;

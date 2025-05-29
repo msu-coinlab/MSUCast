@@ -341,7 +341,7 @@ void EPA_NLP::load(const json& base_scenario_json, const json& scenario_json) {
     }
     //uuid_ = scenario_json["uuid"].get<std::string>();
 
-    uuid_ = xg::newGuid().str();
+    uuid_ = std::string("nlp-") + xg::newGuid().str();
 
 
     std::vector<int> selected_bmps = scenario_json["selected_bmps"].get<std::vector<int>>();
