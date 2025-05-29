@@ -1376,7 +1376,7 @@ void EPA_NLP::finalize_solution(
 
     auto uuid = get_uuid();
     std::cout << "Base UUID: " << uuid << std::endl;
-    std::cout << "Base Path: " << base_path << std::endl;
+   
 
     auto base_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", uuid);
     misc_utilities::mkdir(fmt::format("{}/ipopt_tmp", base_path));
