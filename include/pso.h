@@ -36,7 +36,7 @@ class PSO {
 public:
 
     PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled,
-            const std::string& manure_nutrients_file, const std::string& base_land_bmp_file, const std::string& base_animal_bmp_file,const std::string& base_manure_bmp_file, const std::string& exec_uuid);
+            const std::string& manure_nutrients_file, const std::string& base_land_bmp_file, const std::string& base_animal_bmp_file,const std::string& base_manure_bmp_file, const std::string& exec_uuid, const std::string& base_scenario_uuid);
     ~PSO();
     PSO(const PSO &p);
     PSO& operator=(const PSO &p);

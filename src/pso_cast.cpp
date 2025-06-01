@@ -88,6 +88,7 @@ int main (int argc, char *argv[]) {
     std::string base_animal_bmp_file;
     std::string base_manure_bmp_file;
     std::string exec_uuid;
+    std::string base_scenario_uuid;
     // Jefferson.json 
     //./PSOCast Nelson.json an-all 0 0 1
     // ./pso /opt/opt4cast/output/nsga3/2d3661e2-2012-493f-87ef-65b544f14902/config/reportloads_processed.json /opt/opt4cast/output/nsga3/2d3661e2-2012-493f-87ef-65b544f14902/config/scenario.json ./test 1 1 0 0
@@ -105,6 +106,7 @@ int main (int argc, char *argv[]) {
         base_animal_bmp_file = argv[10];
         base_manure_bmp_file = argv[11];
         exec_uuid = argv[12];
+        base_scenario_uuid = argv[13];
     } 
     
     // Print stuff to the logs 
@@ -113,7 +115,7 @@ int main (int argc, char *argv[]) {
     
 
     PSO pso(nparts, nobjs, max_iter, w, c1, c2, lb, ub, input_filename, scenario_filename, dir_output, is_ef_enabled, is_lc_enabled, is_animal_enabled, is_manure_enabled, 
-            manure_nutrients_file, base_land_bmp_file, base_animal_bmp_file, base_manure_bmp_file, exec_uuid);
+            manure_nutrients_file, base_land_bmp_file, base_animal_bmp_file, base_manure_bmp_file, exec_uuid, base_scenario_uuid);
     pso.optimize();
     pso.save_gbest(dir_output);
     //std::vector<Particle> gbest = pso.get_gbest();
