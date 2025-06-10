@@ -833,7 +833,7 @@ void PSO::exec_ipopt_all_sols(){
         fmt::print("parent_uuid_path: {}", parent_uuid_path);
         //std::cout << "parent_uuid_path:" << parent_uuid_path << std:endl;
         auto base_scenario_uuid = emo_uuid_;
-        auto base_scenario_str = scenario_.scenario_data_str_;
+        auto base_scenario_str = scenario_.get_scenario_string();
 
         execute.execute_new(
                 base_scenario_filename,

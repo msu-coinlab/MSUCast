@@ -67,6 +67,9 @@ class Scenario {
         size_t get_scenario_id() {
             return scenario_id_;
         }
+        std::string get_scenario_string(){
+            return scenario_data_str_;
+        }
 
         double normalize_lc(const std::vector<double>& x, 
             std::vector<std::tuple<int, int, int, int, double>>& lc_x,
