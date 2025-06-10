@@ -19,11 +19,13 @@ class EpsConstraint {
     //SmartPtr <TNLP> mynlp;
     SmartPtr <EPA_NLP> mynlp;
     SmartPtr <IpoptApplication> app;
+    std::string base_scenario_uuid_;
+    std::string base_scenario_str_;
 
     //EPA_NLP *mynlp;
 public:
 
-    EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast, std::string& emo_path);
+    EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast, std::string& emo_path, std::string& base_scenario_uuid, std::string& base_scenario_str);
 
     bool constr_eval(double reduction, int nsteps, const std::vector<std::string>& uuids, const std::string& parent_uuid_path);
     bool evaluate(double, int);

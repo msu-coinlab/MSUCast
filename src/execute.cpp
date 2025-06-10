@@ -207,7 +207,9 @@ void Execute::execute_new(
         int nsteps,
         int evaluate_cast, 
         std::string original_base_scenario,
-        std::string emo_path 
+        std::string emo_path,
+        std::string base_scenario_uuid,
+        std::string base_scenario_str
         ) {
     std::string env_var = "OPT4CAST_EPS_CNSTR_PATH";
     std::string EPS_CNSTR_PATH = misc_utilities::get_env_var("OPT4CAST_RUN_EPS_CNSTR_PATH", "/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr");
@@ -223,7 +225,9 @@ void Execute::execute_new(
                 nsteps,
                 evaluate_cast,
                 original_base_scenario,
-                emo_path
+                emo_path,
+                base_scenario_uuid,
+                base_scenario_str
                 );
 
     fmt::print("exec_string: {}\n", exec_string);

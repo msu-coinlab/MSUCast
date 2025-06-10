@@ -991,8 +991,7 @@ double Scenario::normalize_manure(const std::vector<double>& x, std::vector<std:
 
 std::vector<std::string> Scenario::send_files(const std::string& emo_uuid, const std::vector<std::string>& exec_uuid_vec) {
     std::string emo_str = scenario_data_str_;
-    
-
+    std::cout << "Emo PSO uuid " << emo_uuid << "str: " << emo_str << std::endl; 
     RabbitMQClient rabbit(emo_str, emo_uuid);
 
     for (const auto& exec_uuid : exec_uuid_vec) {

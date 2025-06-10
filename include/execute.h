@@ -28,7 +28,9 @@ class Execute {
             int nsteps,
             int evaluate_cast,
             std::string original_base_scenario,
-            std::string emo_path
+            std::string emo_path,
+            std::string base_scenario_uuid,
+            std::string base_scenario_str
         ); 
 
         void get_json_scenario( size_t sinfo, const std::string& report_loads_path, const std::string& output_path_prefix);

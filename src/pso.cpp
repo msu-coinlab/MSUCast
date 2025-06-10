@@ -622,7 +622,7 @@ PSO::~PSO() {
 }
 void PSO::delete_tmp_files(){
     int counter = 0;
-    std::string directory = fmt::format("/opt/opt4cast/output/nsga3/{}", emo_uuid_);
+    std::string directory = fmt::format("/opt/opt4cast/output/nsga3/{}", exec_uuid_);
     for (const auto& exec_uuid_vec : exec_uuid_log_) {
         for (const auto& exec_uuid: exec_uuid_vec) {
             auto list_files = misc_utilities::find_files(directory, exec_uuid);
@@ -646,11 +646,11 @@ void PSO::delete_tmp_files(){
 
 
 void PSO::init_cast(const std::string& input_filename, const std::string& scenario_filename, const std::string& manure_nutrients_file) {
-    fmt::print("emo_uuid: {}\n", emo_uuid_);
-    std::string emo_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", emo_uuid_);
+    fmt::print("exec_uuid: {}\n", exec_uuid_);
+    std::string exec_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", exec_uuid_);
     std::unordered_map<std::string, std::tuple<int, double, double , double, double>> generation_fx;//key: UID, tuple: [idx, Nitrogen, Phosphorus, Sediments]
     std::unordered_map<std::string, int> generation_uuid_idx;
-    misc_utilities::mkdir(emo_path);
+    misc_utilities::mkdir(exec_path);
 
     scenario_.init(input_filename, scenario_filename, is_ef_enabled_, is_lc_enabled_, is_animal_enabled_, is_manure_enabled_, manure_nutrients_file);
     ef_size_ = scenario_.get_ef_size();
@@ -772,7 +772,7 @@ void PSO::exec_ipopt_all_sols(){
     max_idx = indices[indices.size() - 1];
     mid_idx = indices[indices.size() / 2];
     std::vector<int> idx_vec = {min_idx, mid_idx, max_idx}; 
-    std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}", emo_uuid_);
+    std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}", exec_uuid_);
     std::string ipopt_path = fmt::format("{}/ipopt", path);
     int counter = 0;
     //json scenario_json = misc_utilities::read_json_file(fmt::format("{}/scenario.json", path));
@@ -791,11 +791,11 @@ void PSO::exec_ipopt_all_sols(){
         costs_json_file["manure_cost"] = manure_cost;
         misc_utilities::write_json_file(fmt::format("{}_costs.json", parent_uuid_path), costs_json_file);
 
-        //execute.set_files(emo_uuid_, in_file);
-        //execute.execute(emo_uuid_, 0.50, 6, 20);
+        //execute.set_files(exec_uuid_, in_file);
+        //execute.execute(exec_uuid_, 0.50, 6, 20);
 
         fmt::print("Particle Selected Cost: {}\n", gbest_[idx].get_fx()[0]);
-        //execute.update_output(emo_uuid_, gbest_[idx].get_fx()[0]);
+        //execute.update_output(exec_uuid_, gbest_[idx].get_fx()[0]);
         fmt::print("======================== best_lc_cost_: {}\n", lc_cost);
         fmt::print("======================== best_animal_cost_: {}\n", animal_cost);
         fmt::print("======================== best_manure_cost_: {}\n", manure_cost);
@@ -832,6 +832,8 @@ void PSO::exec_ipopt_all_sols(){
         auto scenario_json_path = scenario_filename_;
         fmt::print("parent_uuid_path: {}", parent_uuid_path);
         //std::cout << "parent_uuid_path:" << parent_uuid_path << std:endl;
+        auto base_scenario_uuid = emo_uuid_;
+        auto base_scenario_str = scenario_.scenario_data_str_;
 
         execute.execute_new(
                 base_scenario_filename,
@@ -842,7 +844,9 @@ void PSO::exec_ipopt_all_sols(){
                 nsteps,//10
                 1,
                 parent_uuid_path,
-                path 
+                path,
+                base_scenario_uuid,
+                base_scenario_str
             );
 
         fmt::print("before move_files\n");
@@ -896,7 +900,7 @@ void PSO::evaluate_ipopt_sols(const std::string& sub_dir, const std::string& ipo
     std::unordered_map<std::string, double> total_cost_map;
     //get_parent_solution
 
-    std::string emo_path = fmt::format("/opt/opt4cast/output/nsga3/{}", emo_uuid_);
+    std::string emo_path = fmt::format("/opt/opt4cast/output/nsga3/{}", exec_uuid_);
     auto ipopt_in_filename = fmt::format("{}/{}_impbmpsubmittedland.json", emo_path, ipopt_uuid);
     fmt::print("ipopt_in_filename: {}\n", ipopt_in_filename);
     std::vector<std::tuple<int, int, int, int, double>> parent_list;
@@ -938,7 +942,7 @@ void PSO::evaluate_ipopt_sols(const std::string& sub_dir, const std::string& ipo
         total_cost_map[exec_uuid] = scenario_.compute_cost(combined) + animal_cost + manure_cost;
     }
 
-    auto results = scenario_.send_files(emo_uuid_, exec_uuid_vec);
+    auto results = scenario_.send_files(exec_uuid_, exec_uuid_vec);
 
     //ipopt_results
     auto dir_path = fmt::format("{}/config/{}", emo_path, sub_dir);
@@ -988,13 +992,13 @@ void PSO::exec_ipopt(){
     }
     auto ipopt_uuid = particle_selected.get_uuid();
     fmt::print("ipopt_uuid: {}\n", ipopt_uuid);
-    auto in_file = fmt::format("/opt/opt4cast/output/nsga3/{}/{}_reportloads.csv", emo_uuid_, ipopt_uuid);
+    auto in_file = fmt::format("/opt/opt4cast/output/nsga3/{}/{}_reportloads.csv", exec_uuid_, ipopt_uuid);
 
     auto lc_cost = particle_selected.get_lc_cost();
     auto animal_cost = particle_selected.get_animal_cost();
     auto manure_cost = particle_selected.get_manure_cost();
-    execute.set_files(emo_uuid_, in_file);
-    execute.execute(emo_uuid_, 0.50, 6, 20);
+    execute.set_files(exec_uuid_, in_file);
+    execute.execute(exec_uuid_, 0.50, 6, 20);
     std::string exec_str = "/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr";
 
     //OPT4CAST_RUN_EPS_CNSTR_PATH = os.environ.get('OPT4CAST_RUN_EPS_CNSTR_PATH', '/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr')
@@ -1015,7 +1019,7 @@ void PSO::exec_ipopt(){
         ipopt_popsize //10
         ); 
     fmt::print("Particle Selected Cost: {}\n", particle_selected.get_fx()[0]);
-    execute.update_output(emo_uuid_, particle_selected.get_fx()[0]);
+    execute.update_output(exec_uuid_, particle_selected.get_fx()[0]);
     fmt::print("======================== best_lc_cost_: {}\n", lc_cost);
     fmt::print("======================== best_animal_cost_: {}\n", animal_cost);
     fmt::print("======================== best_manure_cost_: {}\n", manure_cost);
@@ -1068,6 +1072,8 @@ void PSO::evaluate() {
     std::vector<double> total_cost_vec(nparts, 0.0);
     std::unordered_map<std::string, int> generation_uuid_idx;
     std::string emo_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", emo_uuid_);
+    std::string exec_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", exec_uuid_);
+
     for (int i = 0; i < nparts; i++) {
         std::vector<std::tuple<int, int, int, int, double>> lc_x;
         std::vector<std::tuple<int, int, int, int, int, double>> animal_x;
@@ -1096,7 +1102,7 @@ void PSO::evaluate() {
             total_cost += lc_cost;
             particles[i].set_lc_x(lc_x);
             //fmt::print("exec_uuid: {}\n", exec_uuid);  
-            auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
+            auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", exec_path, exec_uuid);
             std::cout << "Writing the land file" << std::endl;
             scenario_.write_land(lc_x, land_filename, base_land_bmp_inputs_);
             if (!std::filesystem::exists(land_filename)) {
@@ -1109,7 +1115,7 @@ void PSO::evaluate() {
 
             scenario_.write_land_json(lc_x, replace_ending(land_filename, ".parquet", ".json"));
         }else {
-            auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", emo_path, exec_uuid);
+            auto land_filename = fmt::format("{}/{}_impbmpsubmittedland.parquet", exec_path, exec_uuid);
             std::filesystem::copy(base_land_bmp_file_,land_filename, std::filesystem::copy_options::overwrite_existing);
             std::cout << "Land Disabled file path:" << land_filename << std::endl;
         }
@@ -1120,7 +1126,7 @@ void PSO::evaluate() {
             total_cost += animal_cost;
 
             particles[i].set_animal_x(animal_x);
-            auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
+            auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", exec_path, exec_uuid);
             scenario_.write_animal(animal_x, animal_filename);
             if (!std::filesystem::exists(animal_filename)) {
                 total_cost = 9999999999999.99;
@@ -1131,11 +1137,11 @@ void PSO::evaluate() {
             }
             scenario_.write_animal_json(animal_x, replace_ending(animal_filename, ".parquet", ".json"));
         }else{ 
-            std::filesystem::path emo_path_obj(emo_path);
+            std::filesystem::path exec_path_obj(exec_path);
             std::filesystem::path exec_uuid_str(exec_uuid);
 
             // Handle animal files
-            std::filesystem::path animal_filename = emo_path_obj / (exec_uuid_str.string() + "_impbmpsubmittedanimal.parquet");
+            std::filesystem::path animal_filename = exec_path_obj / (exec_uuid_str.string() + "_impbmpsubmittedanimal.parquet");
             std::filesystem::copy(base_animal_bmp_file_, animal_filename, std::filesystem::copy_options::overwrite_existing);
             std::cout << "Animal Disabled file path:" << animal_filename << std::endl;
         }
@@ -1146,7 +1152,7 @@ void PSO::evaluate() {
             total_cost += manure_cost;
 
             particles[i].set_manure_x(manure_x);
-            auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", emo_path, exec_uuid);
+            auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", exec_path, exec_uuid);
             scenario_.write_manure(manure_x, manure_filename);
             if (!std::filesystem::exists(manure_filename)) {
                 total_cost = 9999999999999.99;
@@ -1158,9 +1164,9 @@ void PSO::evaluate() {
             scenario_.write_manure_json(manure_x, replace_ending(manure_filename, ".parquet", ".json"));
         }else{
            
-            std::filesystem::path emo_path_obj(emo_path);
+            std::filesystem::path exec_path_obj(exec_path);
             std::filesystem::path exec_uuid_str(exec_uuid);
-            std::filesystem::path manure_filename = emo_path_obj / (exec_uuid_str.string() + "_impbmpsubmittedmanuretransport.parquet");
+            std::filesystem::path manure_filename = exec_path_obj / (exec_uuid_str.string() + "_impbmpsubmittedmanuretransport.parquet");
 
             std::filesystem::copy(base_manure_bmp_file_, manure_filename, std::filesystem::copy_options::overwrite_existing);
             std::cout << "Manure Disabled file path:" << manure_filename << std::endl;
@@ -1174,7 +1180,7 @@ void PSO::evaluate() {
     }
 
     //send files and wait for them
-    auto results = scenario_.send_files(emo_uuid_, exec_uuid_vec);
+    auto results = scenario_.send_files(exec_uuid_, exec_uuid_vec);
 
     //for (int i = 0; i < nparts; i++) {
     for (auto const& key : results) {
@@ -1202,9 +1208,9 @@ void PSO::save_gbest(std::string out_dir) {
     //misc_utilities::mkdir(out_dir);
 
     auto pf_path = fmt::format("{}", out_dir);
-    std::string emo_path = fmt::format("/opt/opt4cast/output/nsga3/{}/front", emo_uuid_);
+    std::string exec_path = fmt::format("/opt/opt4cast/output/nsga3/{}/front", exec_uuid_);
 
-    misc_utilities::copy_full_directory(emo_path, pf_path);
+    misc_utilities::copy_full_directory(exec_path, pf_path);
 
     /*
     int counter = 0;
