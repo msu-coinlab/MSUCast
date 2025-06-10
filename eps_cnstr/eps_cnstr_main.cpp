@@ -55,7 +55,9 @@ int main(
     std::string parent_uuid_path; // the full path + the uuid of the parent file.
     std::vector<std::string> uuids;
     std::string path_out;
-    std::string emo_path;
+    std::string exec_path;
+    std::string base_scenario_uuid;
+    std::string base_scenario_str;
     filename_in = argv[1];
     json base_scenario_json = read_json_file(filename_in);
 
@@ -83,7 +85,9 @@ int main(
     }
     if (argc > 8) {
         parent_uuid_path = argv[8];
-        emo_path = argv[9];
+        exec_path = argv[9];
+        base_scenario_uuid = argv[10];
+        base_scenario_str = argv[11];
     }
 
     for (int i = 0; i < nsteps; i++) {
@@ -113,7 +117,7 @@ int main(
     }
     */
     if (option == 1) { //ipopt Opt3
-        EpsConstraint eps_constr(base_scenario_json, scenario_json, path_out, pollutant_idx, evaluate_cast, emo_path, base_scenario_uuid, base_scenario_str);
+        EpsConstraint eps_constr(base_scenario_json, scenario_json, path_out, pollutant_idx, evaluate_cast, exec_path, base_scenario_uuid, base_scenario_str);
         eps_constr.constr_eval(reduction, nsteps, uuids, parent_uuid_path);
     }
     /*

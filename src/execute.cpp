@@ -207,7 +207,7 @@ void Execute::execute_new(
         int nsteps,
         int evaluate_cast, 
         std::string original_base_scenario,
-        std::string emo_path,
+        std::string exec_path,
         std::string base_scenario_uuid,
         std::string base_scenario_str
         ) {
@@ -225,7 +225,7 @@ void Execute::execute_new(
                 nsteps,
                 evaluate_cast,
                 original_base_scenario,
-                emo_path,
+                exec_path,
                 base_scenario_uuid,
                 base_scenario_str
                 );
