@@ -65,7 +65,7 @@ void DataReader::read_scenario() {
             scenario_data["BaseLoadId"] = row["BaseLoadId"].get<int>();
             scenario_data["CostProfileId"] = row["CostProfileId"].get<int>();
             scenario_data["ClimateChangeDataSetId"] = row["ClimateChangeDataSetId"].get<int>();
-            scenario_data["HistoricalCropNeedScenario"]= 6608;
+            scenario_data["HistoricalCropNeedScenario"]= 9999;//6608;
             scenario_data["PointSourceDataSetId"] = row["PointSourceDataSetId"].get<int>();
             scenario_data["ScenarioTypeId"] = row["ScenarioTypeId"].get<int>();
             scenario_data["SoilPDataSetId"] = row["SoilPDataSetId"].get<int>();
@@ -79,7 +79,7 @@ void DataReader::read_scenario() {
             int base_load= row["BaseLoadId"].get<int>();
             int cost_profile= row["CostProfileId"].get<int>();
             int climate_change_data_set= row["ClimateChangeDataSetId"].get<int>();
-            int historical_crop_need_scenario= 6608;
+            int historical_crop_need_scenario= 9999;//6608;
             int point_source_data_set= row["PointSourceDataSetId"].get<int>();
             int scenario_type= row["ScenarioTypeId"].get<int>();
             int soil_p_data_set= row["SoilPDataSetId"].get<int>();
