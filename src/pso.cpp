@@ -782,6 +782,7 @@ void PSO::exec_ipopt_all_sols(){
         auto manure_cost = gbest_[idx].get_manure_cost();
         auto parent_uuid = gbest_[idx].get_uuid();
         auto parent_uuid_path = fmt::format("{}/{}", path, parent_uuid);
+        misc_utilities::mkdir(parent_uuid_path);
 
 
         // Make the cost.json file and move to parent uuid path 
