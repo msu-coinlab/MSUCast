@@ -98,11 +98,9 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
         // merge the new bmps with the new bmps added on the top of the base
-        auto parent_land_path = fmt::format("{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path);
-        auto current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
-        auto dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path, uuids[i]);
-        std::vector<std::tuple<int, int, int, int, int, int, double> > parent_land = mynlp->read_land(parent_land_path);
-        std::vector<std::tuple<int, int, int, int, int, int, double> >  current_land = mynlp->read_land(current_land_path);
+        parent_land_path = fmt::format("{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path);
+        current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
+        dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path, uuids[i]);
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
