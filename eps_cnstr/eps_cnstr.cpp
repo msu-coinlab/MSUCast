@@ -29,7 +29,7 @@ EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenari
     }
     evaluate_cast_ = evaluate_cast;
     
-    auto uuid = exec_path.substr(exec_path.find_last_of("/") + 1);
+    auto uuid = path_out.substr(path_out.find_last_of("/") + 1);
     mynlp = new EPA_NLP(base_scenario_json, scenario_json, path_out, pollutant_idx, uuid);
     app = IpoptApplicationFactory();
     base_scenario_uuid_ = base_scenario_uuid;
