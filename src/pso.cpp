@@ -884,7 +884,7 @@ void PSO::exec_ipopt_all_sols(){
     std::string pf_path = fmt::format("{}/front", path);
     std::string csv_path = fmt::format("{}/front/pareto_front.txt", path);
 
-        fmt::print("before find pareto  \n");
+    fmt::print("before find pareto  \n");
     std::vector<std::string> pf_files = findParetoFrontFiles(objectives, directory);
     misc_utilities::move_pf(ipopt_path, pf_path, pf_files);
 

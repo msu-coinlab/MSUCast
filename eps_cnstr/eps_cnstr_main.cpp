@@ -95,9 +95,6 @@ int main(
         uuids.push_back(xg::newGuid().str());
     }
 
-    
-
-
     fmt::print("filename_scenario: {}\n", filename_scenario);
 
 
