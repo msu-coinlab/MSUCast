@@ -209,13 +209,14 @@ void Execute::execute_new(
         std::string original_base_scenario,
         std::string exec_path,
         std::string base_scenario_uuid,
-        std::string base_scenario_str
+        std::string base_scenario_str,
+        std::string pso_exec_uuid
         ) {
     std::string env_var = "OPT4CAST_EPS_CNSTR_PATH";
     std::string EPS_CNSTR_PATH = misc_utilities::get_env_var("OPT4CAST_RUN_EPS_CNSTR_PATH", "/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr");
     // const std::string& emo_uuid, 
     // std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}/config/", emo_uuid);
-    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {} {} {} {}", 
+    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {} {} {} {} {}", 
                 EPS_CNSTR_PATH, 
                 base_scenario,
                 scenario,
@@ -227,7 +228,8 @@ void Execute::execute_new(
                 original_base_scenario,
                 exec_path,
                 base_scenario_uuid,
-                base_scenario_str
+                base_scenario_str,
+                pso_exec_uuid
                 );
 
     fmt::print("exec_string: {}\n", exec_string);

@@ -13,7 +13,7 @@
 
 namespace fs = std::filesystem;
 
-EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast, std::string& exec_path, std::string& base_scenario_uuid, std::string& base_scenario_str){ 
+EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenario_json, const std::string& path_out, int pollutant_idx, bool evaluate_cast, std::string& exec_path, std::string& base_scenario_uuid, std::string& base_scenario_str, std::string& pso_exec_uuid){ 
     path_out_ = path_out; 
     //uuid_ = emo_path.substr(emo_path.find_last_of("/") + 1);
     // Check if the directory exists
@@ -34,6 +34,7 @@ EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenari
     app = IpoptApplicationFactory();
     base_scenario_uuid_ = base_scenario_uuid;
     base_scenario_str_ = base_scenario_str;
+    pso_exec_uuid_ = pso_exec_uuid;
 }
 
 bool EpsConstraint::evaluate(double reduction, int current_iteration=0) {
@@ -151,7 +152,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
 
 std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_data, const std::string& uuid, const std::vector<std::string>& uuids) {
-    RabbitMQClient rabbit(base_scenario_str_, base_scenario_uuid_);
+    RabbitMQClient rabbit(base_scenario_str_, pso_exec_uuid_);
     std::cout << "emo ipopt uuid " << base_scenario_uuid_ << "str: "  << base_scenario_str_ << std::endl; 
     fmt ::print("senario_data: {} {}\n", scenario_data, uuid);
 

@@ -847,7 +847,8 @@ void PSO::exec_ipopt_all_sols(){
                 parent_uuid_path,
                 path,
                 base_scenario_uuid,
-                base_scenario_str
+                base_scenario_str,
+                exec_uuid_
             );
 
         fmt::print("before move_files\n");

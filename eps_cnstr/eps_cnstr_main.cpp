@@ -58,6 +58,7 @@ int main(
     std::string exec_path;
     std::string base_scenario_uuid;
     std::string base_scenario_str;
+    std::string pso_exec_uuid;
     filename_in = argv[1];
     json base_scenario_json = read_json_file(filename_in);
 
@@ -88,6 +89,7 @@ int main(
         exec_path = argv[9];
         base_scenario_uuid = argv[10];
         base_scenario_str = argv[11];
+        pso_exec_uuid = argv[12];
     }
 
     for (int i = 0; i < nsteps; i++) {
