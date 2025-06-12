@@ -327,10 +327,6 @@ void EPA_NLP::load(const json& base_scenario_json, const json& scenario_json) {
         }
     }
     scenario_data_ = base_scenario_json["scenario_data_str"].get<std::string>();
-
-
-
-
     std::vector<std::string> keys_to_check_scenario = {"selected_bmps", "bmp_cost", "selected_reduction_target", "sel_pollutant", "target_pct", "uuid"};
 
     for (const auto& key : keys_to_check_scenario) {

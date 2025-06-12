@@ -215,7 +215,7 @@ void Execute::execute_new(
     std::string EPS_CNSTR_PATH = misc_utilities::get_env_var("OPT4CAST_RUN_EPS_CNSTR_PATH", "/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr");
     // const std::string& emo_uuid, 
     // std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}/config/", emo_uuid);
-    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {} {}", 
+    std::string exec_string = fmt::format("{} {} {} {} {} {} {} {} {} {} {} {}", 
                 EPS_CNSTR_PATH, 
                 base_scenario,
                 scenario,
@@ -234,7 +234,7 @@ void Execute::execute_new(
     using namespace my_execute;
     CommandResult nullbyteCommand = Command::exec(exec_string); // NOLINT(bugprone-string-literal-with-embedded-nul)
     std::ofstream ofile(fmt::format("{}/filename2.txt", out_path));
-    ofile<<exec_string<<std::endl;
+    ofile << exec_string << std::endl;
     ofile << "Output using fread: " << nullbyteCommand << std::endl;
     ofile.close();
 }
