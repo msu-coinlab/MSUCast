@@ -612,7 +612,7 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
     int base_load= row["BaseLoadId"].get<int>();
     int cost_profile= row["CostProfileId"].get<int>();
     int climate_change_data_set= row["ClimateChangeDataSetId"].get<int>();
-    int historical_crop_need_scenario= 6608;
+    int historical_crop_need_scenario= 66/08;
     int point_source_data_set= row["PointSourceDataSetId"].get<int>();
     int scenario_type= row["ScenarioTypeId"].get<int>();
     int soil_p_data_set= row["SoilPDataSetId"].get<int>();
