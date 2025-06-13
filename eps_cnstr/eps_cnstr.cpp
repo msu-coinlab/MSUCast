@@ -91,7 +91,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
         auto parent_land_path = fmt::format("{}_impbmpsubmittedland.parquet", parent_uuid_path);
         auto current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
-        auto dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", parent_uuid_path, uuids[i]);
+        auto dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", exec_path_, uuids[i]);
 
 
         std::vector<std::tuple<int, int, int, int, int, int, double> > parent_land = mynlp->read_land(parent_land_path);
@@ -99,24 +99,24 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
-        auto src_land_path = dst_land_path;
-        dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", exec_path_, uuids[i]);
-        misc_utilities::copy_file(src_land_path, dst_land_path);
+        // auto src_land_path = dst_land_path;
+        // dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", exec_path_, uuids[i]);
+        // misc_utilities::copy_file(src_land_path, dst_land_path);
 
         // merge the new bmps with the new bmps added on the top of the base
         parent_land_path = fmt::format("{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path);
         current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
-        dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path, uuids[i]);
+        dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", exec_path_, uuids[i]);
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
-        src_land_path = dst_land_path;
-        dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", exec_path_, uuids[i]);
-        misc_utilities::copy_file(src_land_path, dst_land_path);
+        // src_land_path = dst_land_path;
+        // dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", exec_path_, uuids[i]);
+        // misc_utilities::copy_file(src_land_path, dst_land_path);
         
         auto parent_land_json_path = fmt::format("{}_impbmpsubmittedland.json", parent_uuid_path);
         auto current_land_json_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.json");
-        auto dst_land_json_path = fmt::format("{}/{}_impbmpsubmittedland.json", parent_uuid_path, uuids[i]);
+        auto dst_land_json_path = fmt::format("{}/{}_impbmpsubmittedland.json", exec_path_, uuids[i]);
 
         /*
         json parent_land_json = misc_utilities::read_json_file(parent_land_json_path);
@@ -129,7 +129,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
         auto current_cost_path = fmt::format("{}/ipopt_tmp/{}_costs.json", base_path, i);
         auto parent_cost_path = fmt::format("{}_costs.json", parent_uuid_path);
-        auto dst_cost_path = fmt::format("{}/{}_costs.json", parent_uuid_path, uuids[i]);
+        auto dst_cost_path = fmt::format("{}/{}_costs.json", exec_path_, uuids[i]);
 
         auto parent_cost_json = misc_utilities::read_json_file(parent_cost_path);
         auto current_cost_json = misc_utilities::read_json_file(current_cost_path);
@@ -171,7 +171,7 @@ std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_
 
     auto output_rabbit = rabbit.wait_for_all_data();
     int i = 0;
-    auto base_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", uuid);
+    auto base_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", pso_exec_uuid_);
 
     std::unordered_map<std::string, int> uuids_map;
 
