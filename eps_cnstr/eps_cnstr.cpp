@@ -140,7 +140,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
                 
         misc_utilities::write_json_file(dst_cost_path, parent_cost_json);
 
-        transfer the base animal and manure files to the current uuid path
+        // transfer the base animal and manure files to the current uuid path
         auto parent_animal_path = fmt::format("{}_impbmpsubmittedanimal.parquet", parent_uuid_path);
         auto dst_animal_path = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", exec_path_, uuids[i]);
 
