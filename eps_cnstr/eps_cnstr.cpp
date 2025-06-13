@@ -107,6 +107,8 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         parent_land_path = fmt::format("{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path);
         current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
         dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", exec_path_, uuids[i]);
+        parent_land = mynlp->read_land(parent_land_path);
+        current_land = mynlp->read_land(current_land_path);
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
