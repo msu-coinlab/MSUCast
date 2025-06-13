@@ -160,7 +160,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
 
 std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_data, const std::string& uuid, const std::vector<std::string>& uuids) {
-    RabbitMQClient rabbit(base_scenario_str_, pso_exec_uuid_cd);
+    RabbitMQClient rabbit(base_scenario_str_, pso_exec_uuid_);
     std::cout << "emo ipopt uuid " << base_scenario_uuid_ << "str: "  << base_scenario_str_ << std::endl; 
     fmt ::print("senario_data: {} {}\n", scenario_data, uuid);
 
