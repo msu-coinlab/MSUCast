@@ -35,6 +35,7 @@ EpsConstraint::EpsConstraint(const json& base_scenario_json, const json& scenari
     base_scenario_uuid_ = base_scenario_uuid;
     base_scenario_str_ = base_scenario_str;
     pso_exec_uuid_ = pso_exec_uuid;
+    exec_path_ = exec_path;
 }
 
 bool EpsConstraint::evaluate(double reduction, int current_iteration=0) {
@@ -98,6 +99,10 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
+        auto src_land_path = dst_land_path;
+        dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", exec_path_, uuids[i]);
+        misc_utilities::copy_file(src_land_path, dst_land_path);
+
         // merge the new bmps with the new bmps added on the top of the base
         parent_land_path = fmt::format("{}_impbmpsubmittedland_new_bmps.parquet", parent_uuid_path);
         current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
@@ -105,6 +110,10 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
 
+        src_land_path = dst_land_path;
+        dst_land_path = fmt::format("{}/{}_impbmpsubmittedland_new_bmps.parquet", exec_path_, uuids[i]);
+        misc_utilities::copy_file(src_land_path, dst_land_path);
+        
         auto parent_land_json_path = fmt::format("{}_impbmpsubmittedland.json", parent_uuid_path);
         auto current_land_json_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.json");
         auto dst_land_json_path = fmt::format("{}/{}_impbmpsubmittedland.json", parent_uuid_path, uuids[i]);
@@ -113,7 +122,6 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         json parent_land_json = misc_utilities::read_json_file(parent_land_json_path);
         json current_land_json = misc_utilities::read_json_file(current_land_json_path);
         */
-
 
         misc_utilities::merge_json_files(current_land_json_path,
                         parent_land_json_path,  
@@ -133,15 +141,15 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         misc_utilities::write_json_file(dst_cost_path, parent_cost_json);
 
         // transfer the base animal and manure files to the current uuid path
-        auto parent_animal_path = fmt::format("{}_impbmpsubmittedanimal.parquet", parent_uuid_path);
-        auto dst_animal_path = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", parent_uuid_path, uuids[i]);
+        // auto parent_animal_path = fmt::format("{}_impbmpsubmittedanimal.parquet", parent_uuid_path);
+        // auto dst_animal_path = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", parent_uuid_path, uuids[i]);
 
-        misc_utilities::copy_file(parent_animal_path, dst_animal_path);
+        // misc_utilities::copy_file(parent_animal_path, dst_animal_path);
 
-        auto parent_manure_path = fmt::format("{}_impbmpsubmittedmanuretransport.parquet", parent_uuid_path);
-        auto dst_manure_path = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", parent_uuid_path, uuids[i]);
+        // auto parent_manure_path = fmt::format("{}_impbmpsubmittedmanuretransport.parquet", parent_uuid_path);
+        // auto dst_manure_path = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", parent_uuid_path, uuids[i]);
 
-        misc_utilities::copy_file(parent_manure_path, dst_manure_path);        
+        // misc_utilities::copy_file(parent_manure_path, dst_manure_path);        
     }
 
     if(evaluate_cast_) {
@@ -152,12 +160,12 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
 
 
 std::vector<std::string>  EpsConstraint::send_files(const std::string& scenario_data, const std::string& uuid, const std::vector<std::string>& uuids) {
-    RabbitMQClient rabbit(base_scenario_str_, base_scenario_uuid_);
+    RabbitMQClient rabbit(base_scenario_str_, uuid);
     std::cout << "emo ipopt uuid " << base_scenario_uuid_ << "str: "  << base_scenario_str_ << std::endl; 
     fmt ::print("senario_data: {} {}\n", scenario_data, uuid);
 
     for (const auto& exec_uuid : uuids) {
-        auto current_exec_uuid = fmt::format("{}/{}/{}", pso_exec_uuid_, uuid, exec_uuid);
+        auto current_exec_uuid = fmt::format("{}", exec_uuid);
         rabbit.send_signal(current_exec_uuid);
     }
 

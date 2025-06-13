@@ -22,6 +22,7 @@ class EpsConstraint {
     std::string base_scenario_uuid_;
     std::string base_scenario_str_;
     std::string pso_exec_uuid_;
+    std::string exec_path_;
     //EPA_NLP *mynlp;
 public:
 
