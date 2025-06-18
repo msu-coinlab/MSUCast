@@ -625,6 +625,7 @@ bool EPA_NLP::eval_g_proxy(
                 sigma[1] += eta[1] * pct;
                 sigma[2] += eta[2] * pct;
                 sigma_cnstr += pct;
+                std::cout << "NLP.cpp Sigma_cnstr " << sigma_cnstr << std::endl; 
             }
 
 

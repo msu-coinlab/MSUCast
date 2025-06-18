@@ -1183,12 +1183,18 @@ void PSO::evaluate() {
 
     //send files and wait for them
     auto results = scenario_.send_files(exec_uuid_, exec_uuid_vec);
+    
+    // Read in the scecario file to get the constraint
+    std::ifstream in(scenario_filename_);
+    json scenario;
+    in >> scenario;
+   
 
-    //for (int i = 0; i < nparts; i++) {
     for (auto const& key : results) {
         std::vector<std::string> result_vec;
         misc_utilities::split_str(key, '_', result_vec);
         auto stored_idx = generation_uuid_idx[result_vec[0]];
+        particles[stored_idx].set_gx(total_cost_vec[stored_idx] - scenario["total_budget"].get<double>()); // total cost - upper limit 
         particles[stored_idx].set_fx(total_cost_vec[stored_idx], std::stod(result_vec[1]));
     } 
 

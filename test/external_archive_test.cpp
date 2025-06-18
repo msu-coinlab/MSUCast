@@ -41,14 +41,14 @@ int main() {
         {2.9, 2.2},
         {0.0, 0.0}
     };
-    std::cout<<"Is dominated: (false) "<< is_dominated({1.1, 4.1}, {1.1, 5.1}) <<"\n";
-    std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {2.0, 4.0}) <<"\n";
-    std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {1.0, 4.0}) <<"\n";
-    std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {0.0, 5.0}) <<"\n";
-    std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {2.0, 5.0}) <<"\n";
-    std::cout<<"Is dominated: (true) "<< is_dominated({1.0, 5.0}, {1.0, 4.0}) <<"\n";
-    std::cout<<"Is dominated: (true) "<< is_dominated({1.0, 5.0}, {0.0, 5.0}) <<"\n";
-    std::cout<<"Is dominated: (true) "<< is_dominated({1.0, 5.0}, {0.0, 3.0}) <<"\n";
+    // std::cout<<"Is dominated: (false) "<< is_dominated({1.1, 4.1}, {1.1, 5.1}) <<"\n";
+    // std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {2.0, 4.0}) <<"\n";
+    // std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {1.0, 4.0}) <<"\n";
+    // std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {0.0, 5.0}) <<"\n";
+    // std::cout<<"Is dominated: (false)"<< is_dominated({1.0, 4.0}, {2.0, 5.0}) <<"\n";
+    // std::cout<<"Is dominated: (true) "<< is_dominated({1.0, 5.0}, {1.0, 4.0}) <<"\n";
+    // std::cout<<"Is dominated: (true) "<< is_dominated({1.0, 5.0}, {0.0, 5.0}) <<"\n";
+    // std::cout<<"Is dominated: (true) "<< is_dominated({1.0, 5.0}, {0.0, 3.0}) <<"\n";
 
     /*
      * fx
@@ -90,7 +90,7 @@ int main() {
         print_vector(new_solution_fx);
         std::cout << "\n";
 
-        update_non_dominated_solutions(solutions_x, new_solution_x, solutions_fx, new_solution_fx);
+        //update_non_dominated_solutions(solutions_x, new_solution_x, solutions_fx, new_solution_fx);
 
         std::cout << "New non-dominated solutions are:\n";
         std::cout<<solutions_x.size()<<std::endl;

@@ -19,7 +19,9 @@ public:
     const std::vector<double>& get_x() const { return x; }
     const std::vector<double>& get_pbest() const { return pbest_x; }
     const std::vector<double>& get_fx() const { return fx; }
+    const double& get_gx() const {return gx_;}
     void set_fx(double fx1, double fx2); 
+    void set_gx(double gx1);
     void set_uuid(const std::string& uuid) { uuid_ = uuid; }
     const std::string& get_uuid() const { return uuid_; }
     void init_pbest();
@@ -47,11 +49,13 @@ private:
     int nobjs;
     std::vector<double> x;
     std::vector<double> fx;
+    double gx_;
     std::vector<double> v;
     std::string uuid_;
     double w, c1, c2;
     std::vector<double> pbest_x;
     std::vector<double> pbest_fx;
+    double pbest_gx_;
     double lower_bound;
     double upper_bound;
     std::vector<std::tuple<int, int, int, int, double>> lc_x_;
