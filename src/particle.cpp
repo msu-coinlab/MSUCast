@@ -168,7 +168,7 @@ void Particle::store_amount_plus_minus(const std::string& filename) {
 }
 
 void Particle::update_pbest() {
-    if (is_dominated(pbest_fx, fx,pbest_gx_,gx_) || !is_dominated(fx, pbest_fx,gx_,pbest_gx_)) {
+    if (is_dominated(pbest_fx, fx, pbest_gx_, gx_) || !is_dominated(fx, pbest_fx, gx_, pbest_gx_)) {
         pbest_x = x;
         pbest_fx = fx;
         pbest_gx_ = gx_; 

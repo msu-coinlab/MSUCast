@@ -1189,6 +1189,8 @@ void PSO::evaluate() {
     json scenario;
     in >> scenario;
    
+    std::cout << "scenario_filename_ (evalute): " << scenario << std::endl; 
+    std::cout << "Total Budget: " << scenario["total_budget"].get<double>() << std::endl; 
 
     for (auto const& key : results) {
         std::vector<std::string> result_vec;
