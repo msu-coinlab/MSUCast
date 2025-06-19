@@ -105,6 +105,7 @@ private:
     std::string base_animal_bmp_file_;
     std::string base_manure_bmp_file_;
     std::string out_dir_;
+    double max_budget_;
     Execute execute;
     std::vector<std::vector<std::string>> exec_uuid_log_;
     std::vector<BmpRowLand> base_land_bmp_inputs_;

@@ -66,7 +66,21 @@ struct CostData {
 };
 
 // Function to check if one solution dominates another
-bool dominates(const CostData& a, const CostData& b, int num_objectives) {
+bool dominates(const CostData& a, const CostData& b, int num_objectives,double max_budget) {
+    if(a.objective1<=max_budget && b.objective1>max_budget){
+        return true;
+    }
+    if(a.objective1>max_budget && b.objective1<=max_budget){
+        return false;
+    }
+    if(a.objective1>max_budget && b.objective1>max_budget){
+        if(a.objective1<b.objective1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    } 
     if (num_objectives == 2) {
         return (a.objective1 <= b.objective1 && a.objective2 <= b.objective2) &&
                (a.objective1 < b.objective1 || a.objective2 < b.objective2);
@@ -78,14 +92,14 @@ bool dominates(const CostData& a, const CostData& b, int num_objectives) {
 }
 
 // Function to find non-dominated solutions
-std::vector<std::string> find_pareto_front(const std::vector<CostData>& data, int num_objectives) {
+std::vector<std::string> find_pareto_front(const std::vector<CostData>& data, int num_objectives,double max_budget) {
     std::vector<std::string> pareto_front;
 
     for (const auto& current : data) {
         bool is_dominated = false;
 
         for (const auto& other : data) {
-            if (dominates(other, current, num_objectives)) {
+            if (dominates(other, current, num_objectives,max_budget)) {
                 is_dominated = true;
                 break;
             }
@@ -130,12 +144,12 @@ std::vector<CostData> readCostFiles(const std::vector<std::string>& objs, const 
 }
 
 
-std::vector<std::string> findParetoFrontFiles(const std::vector<std::string>& objs, const std::string& directory) {
+std::vector<std::string> findParetoFrontFiles(const std::vector<std::string>& objs, const std::string& directory, double max_budget) {
 
     int num_objectives = objs.size();
     std::vector<CostData> data;
     data = readCostFiles(objs, directory);
-    return find_pareto_front(data, num_objectives);
+    return find_pareto_front(data, num_objectives, max_budget);
 }
 
 void writeCSV(const std::vector<CostData>& data, const std::string& output_file, const std::vector<std::string>& objs) {
@@ -539,6 +553,11 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     animal_size_ = 0;
     manure_size_ = 0;
     init_cast(input_filename, scenario_filename, manure_nutrients_file);
+    // Read in the scecario file to get the constraint
+    std::ifstream in(scenario_filename_);
+    json scenario;
+    in >> scenario;
+    max_budget_ = scenario["total_budget"].get<double>(); 
     input_filename_ = input_filename;
     scenario_filename_ = scenario_filename;
     this->nparts = nparts;
@@ -707,7 +726,7 @@ void PSO::optimize() {
     fmt::print("======================Gx values before Ipopt===========================================\n");
     //Print all of the gx values 
     for(int i = 0; i < nparts; i++){
-        fmt::print("gx_{} = {}",i,particles[i].get_gx());
+        fmt::print("gx_{} = {}\n",i,particles[i].get_gx());
     }
 
     fmt::print("======================Ipopt===========================================\n");
@@ -938,7 +957,7 @@ void PSO::exec_ipopt_all_sols(){
     std::string csv_path = fmt::format("{}/front/pareto_front.txt", path);
 
     fmt::print("before find pareto  \n");
-    std::vector<std::string> pf_files = findParetoFrontFiles(objectives, directory);
+    std::vector<std::string> pf_files = findParetoFrontFiles(objectives, directory, max_budget_);
     misc_utilities::move_pf(ipopt_path, pf_path, pf_files);
 
     std::vector<CostData> pf_data = readCostFiles(objectives, pf_path);
@@ -1238,20 +1257,12 @@ void PSO::evaluate() {
 
     //send files and wait for them
     auto results = scenario_.send_files(exec_uuid_, exec_uuid_vec);
-    
-    // Read in the scecario file to get the constraint
-    std::ifstream in(scenario_filename_);
-    json scenario;
-    in >> scenario;
-   
-    //std::cout << "scenario_filename_ (evalute): " << scenario << std::endl; 
-    std::cout << "Total Budget: " << scenario["total_budget"].get<double>() << std::endl; 
 
     for (auto const& key : results) {
         std::vector<std::string> result_vec;
         misc_utilities::split_str(key, '_', result_vec);
         auto stored_idx = generation_uuid_idx[result_vec[0]];
-        particles[stored_idx].set_gx(total_cost_vec[stored_idx] - scenario["total_budget"].get<double>()); // total cost - upper limit 
+        particles[stored_idx].set_gx(total_cost_vec[stored_idx] - max_budget_); // total cost - upper limit 
         particles[stored_idx].set_fx(total_cost_vec[stored_idx], std::stod(result_vec[1]));
     } 
 
