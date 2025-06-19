@@ -110,10 +110,12 @@ private:
     std::vector<BmpRowLand> base_land_bmp_inputs_;
     std::vector<std::tuple<int, int, int, int, int, double>> base_animal_bmp_inputs_;
     std::vector<std::tuple<int, int, int, int, int, double>> base_manure_bmp_inputs_;
-
+    // Ipopt functions used 
     void exec_ipopt();
     void exec_ipopt_all_sols();
     void delete_tmp_files();
+    std::vector<Particle> get_min_mid_max_ipopt_position();
+
 
     void evaluate_ipopt_sols(const std::string& sub_dir, const std::string& ipopt_uuid, double animal_cost, double manure_cost);
 

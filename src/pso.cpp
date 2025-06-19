@@ -704,6 +704,14 @@ void PSO::optimize() {
     //exec_ipopt();
     fmt::print("======================Finaliza Optimize===========================================\n");
 
+    fmt::print("======================Gx values before Ipopt===========================================\n");
+    //Print all of the gx values 
+    for(int i = 0; i < nparts; i++){
+        fmt::print("gx_{} = {}",i,particles[i].get_gx());
+    }
+
+    fmt::print("======================Ipopt===========================================\n");
+
     exec_ipopt_all_sols();
     //evaluate_ipopt_sols();
 }
@@ -713,7 +721,6 @@ void PSO::update_pbest() {
     for (int j = 0; j < nparts; j++) {
         particles[j].update_pbest();
     }
-
 }
 
 std::vector<std::string> PSO::generate_n_uuids(int n) {
@@ -749,38 +756,83 @@ void PSO::copy_parquet_files_for_ipopt(const std::string& path, const std::strin
     }
 } 
 
-void PSO::exec_ipopt_all_sols(){
-    Execute execute;
-    int min_idx = 0;
-    int max_idx = 0; 
-    int mid_idx;
-    std::vector<double> values;
 
+std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
+    std::vector<Particle> values;
+    std::vector<Particle> rejects;
+
+    // Find all of valid options
     for (const auto& particle : gbest_) {
-        values.emplace_back(particle.get_fx()[0]);
+        if (particle.get_gx() <= 0) {
+            values.emplace_back(particle);
+        } else {
+            rejects.emplace_back(particle);
+        }
     }
 
-    // Step 1: Initialize a vector with indices 0 to values.size() - 1
-    std::vector<size_t> indices(values.size());
-    std::iota(indices.begin(), indices.end(), 0);
+    // if values does not have 3 values in it add the values 
+    if (values.size() < 3) {
+        std::sort(rejects.begin(), rejects.end(),
+            [](const auto& a, const auto& b) {
+                return a.get_fx()[0] < b.get_fx()[0];
+            });
+        int i = 0;
+        while (values.size() < 3 && i < rejects.size()) {
+            values.emplace_back(rejects[i]);
+            i++;
+        }
+    }
 
-    // Step 2: Sort the indices based on comparing values from the values vector
-    std::sort(indices.begin(), indices.end(),
-        [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
-    //for (const auto& particle : gbest_) {
-    min_idx = indices[0];
-    max_idx = indices[indices.size() - 1];
-    mid_idx = indices[indices.size() / 2];
-    std::vector<int> idx_vec = {min_idx, mid_idx, max_idx}; 
+    std::sort(values.begin(), values.end(),
+        [](const auto& a, const auto& b) {
+            return a.get_fx()[0] < b.get_fx()[0];
+        });
+
+    // Get the calues to be used in ipopt 
+    Particle min_val = values[0];
+    Particle max_val = values[values.size() - 1];
+    Particle mid_val = values[(values.size()) / 2];
+
+    return {min_val, mid_val, max_val};
+}
+
+void PSO::exec_ipopt_all_sols(){
+    Execute execute;
+    // int min_idx = 0;
+    // int max_idx = 0; 
+    // int mid_idx;
+    // std::vector<double> values;
+
+    // for (const auto& particle : gbest_) {
+    //     values.emplace_back(particle.get_fx()[0]);
+    // }
+
+    // // Step 1: Initialize a vector with indices 0 to values.size() - 1
+    // std::vector<size_t> indices(values.size());
+    // std::iota(indices.begin(), indices.end(), 0);
+
+    // // Step 2: Sort the indices based on comparing values from the values vector
+    // std::sort(indices.begin(), indices.end(),
+    //     [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
+    // //for (const auto& particle : gbest_) {
+    // // min_idx is fine
+    // min_idx = indices[0];
+    // // max_idx should be the (first infeasible idx - 1), but if there are not enough feasible solution then consider infeasible as well
+    // max_idx = indices[indices.size() - 1];
+    // mid_idx = (min_idx + max_idx)/2;
+
+
+
+    std::vector<Particle> particle_vec = get_min_mid_max_ipopt_position();
     std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}", exec_uuid_);
     std::string ipopt_path = fmt::format("{}/ipopt", path);
     int counter = 0;
     //json scenario_json = misc_utilities::read_json_file(fmt::format("{}/scenario.json", path));
-   for (const auto& idx : idx_vec) { 
-        auto lc_cost = gbest_[idx].get_lc_cost();
-        auto animal_cost = gbest_[idx].get_animal_cost();
-        auto manure_cost = gbest_[idx].get_manure_cost();
-        auto parent_uuid = gbest_[idx].get_uuid();
+   for (const auto& particle : particle_vec) { 
+        auto lc_cost = particle.get_lc_cost();
+        auto animal_cost = particle.get_animal_cost();
+        auto manure_cost = particle.get_manure_cost();
+        auto parent_uuid = particle.get_uuid();
         auto parent_uuid_path = fmt::format("{}/{}", path, parent_uuid);
         misc_utilities::mkdir(parent_uuid_path);
 
@@ -795,17 +847,17 @@ void PSO::exec_ipopt_all_sols(){
         //execute.set_files(exec_uuid_, in_file);
         //execute.execute(exec_uuid_, 0.50, 6, 20);
 
-        fmt::print("Particle Selected Cost: {}\n", gbest_[idx].get_fx()[0]);
+        fmt::print("Particle Selected Cost: {}\n",particle.get_fx()[0]);
         //execute.update_output(exec_uuid_, gbest_[idx].get_fx()[0]);
         fmt::print("======================== best_lc_cost_: {}\n", lc_cost);
         fmt::print("======================== best_animal_cost_: {}\n", animal_cost);
         fmt::print("======================== best_manure_cost_: {}\n", manure_cost);
        
        // Not used was probs used for logging
-        std::string postfix;
-        if (idx == min_idx) postfix = "min";
-        else if (idx == max_idx) postfix = "max";
-        else postfix = "median";
+        // std::string postfix;
+        // if (idx == min_idx) postfix = "min";
+        // else if (idx == max_idx) postfix = "max";
+        // else postfix = "median";
 
         std::string report_loads_path = fmt::format("{}_reportloads.csv", parent_uuid_path);
         fmt::print("===================================================================================== Scenario_id: {}\n", scenario_.get_scenario_id());
@@ -1068,7 +1120,7 @@ void PSO::print() {
 void PSO::evaluate() {
 
 
-    std::cout << " This is a test to see if one continaer can be build with out doing the whole thing" << std::endl; 
+    //std::cout << " This is a test to see if one continaer can be build with out doing the whole thing" << std::endl; 
 
     std::vector<std::string> exec_uuid_vec;
     std::vector<double> total_cost_vec(nparts, 0.0);
@@ -1111,6 +1163,7 @@ void PSO::evaluate() {
                 total_cost = 9999999999999.99;
                 particles[i].set_lc_cost(lc_cost);
                 particles[i].set_fx(total_cost, total_cost);
+                particles[i].set_gx(total_cost); 
                 flag = false;
                 //continue;
             }
@@ -1134,6 +1187,7 @@ void PSO::evaluate() {
                 total_cost = 9999999999999.99;
                 particles[i].set_animal_cost(animal_cost);
                 particles[i].set_fx(total_cost, total_cost);
+                particles[i].set_gx(total_cost); 
                 flag = false;
                 //continue;
             }
@@ -1160,6 +1214,7 @@ void PSO::evaluate() {
                 total_cost = 9999999999999.99;
                 particles[i].set_manure_cost(manure_cost);
                 particles[i].set_fx(total_cost, total_cost);
+                particles[i].set_gx(total_cost); 
                 flag = false;
                 //continue;
             }
@@ -1189,7 +1244,7 @@ void PSO::evaluate() {
     json scenario;
     in >> scenario;
    
-    std::cout << "scenario_filename_ (evalute): " << scenario << std::endl; 
+    //std::cout << "scenario_filename_ (evalute): " << scenario << std::endl; 
     std::cout << "Total Budget: " << scenario["total_budget"].get<double>() << std::endl; 
 
     for (auto const& key : results) {
