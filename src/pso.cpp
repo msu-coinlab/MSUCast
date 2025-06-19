@@ -553,11 +553,6 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     animal_size_ = 0;
     manure_size_ = 0;
     init_cast(input_filename, scenario_filename, manure_nutrients_file);
-    // Read in the scecario file to get the constraint
-    std::ifstream in(scenario_filename_);
-    json scenario;
-    in >> scenario;
-    max_budget_ = scenario["total_budget"].get<double>(); 
     input_filename_ = input_filename;
     scenario_filename_ = scenario_filename;
     this->nparts = nparts;
@@ -579,6 +574,12 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     base_land_bmp_inputs_ = read_parquet_file_land(base_land_bmp_file);
     base_animal_bmp_inputs_ = read_parquet_file(base_animal_bmp_file);
     base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
+
+     // Read in the scecario file to get the constraint
+     std::ifstream in(scenario_filename_);
+     json scenario;
+     in >> scenario;
+     max_budget_ = scenario["total_budget"].get<double>(); 
 }
 
 PSO::PSO(const PSO &p) {
