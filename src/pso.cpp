@@ -782,9 +782,11 @@ void PSO::copy_parquet_files_for_ipopt(const std::string& path, const std::strin
 std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     std::vector<Particle> values;
     std::vector<Particle> rejects;
-
+    
     // Find all of valid options
     for (const auto& particle : gbest_) {
+        particles.set_gx(particle.get_fx()[0] - max_budget_); // total cost - upper limit 
+        std::cout << "Particles gx: " << particle.get_gx() << std::endl;
         if (particle.get_gx() <= 0) {
             values.emplace_back(particle);
         } else {
@@ -805,6 +807,11 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
         }
     }
 
+    for(auto value:values){
+        std::cout << "Values: " << value << std::endl;
+    }
+
+
     std::sort(values.begin(), values.end(),
         [](const auto& a, const auto& b) {
             return a.get_fx()[0] < b.get_fx()[0];
@@ -814,7 +821,8 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     Particle min_val = values[0];
     Particle max_val = values[values.size() - 1];
     Particle mid_val = values[(values.size()) / 2];
-
+    std::cout << "Min_val: " << min_val << " Mid value: " << mid_val << "Max Value: " << max_val << std::endl;
+    std::cout << "Min_val Cost: " << min_val.get_fx()[0] << " Mid value Cost: " << mid_val.get_fx()[0] << "Max Value Cost: " << max_val.get_fx()[0] << std::endl;
     return {min_val, mid_val, max_val};
 }
 
