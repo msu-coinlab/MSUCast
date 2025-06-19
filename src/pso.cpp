@@ -66,7 +66,7 @@ struct CostData {
 };
 
 // Function to check if one solution dominates another
-bool dominates(const CostData& a, const CostData& b, int num_objectives,double max_budget) {
+bool dominates(const CostData& a, const CostData& b, int num_objectives, double max_budget) {
     if(a.objective1<=max_budget && b.objective1>max_budget){
         return true;
     }
@@ -99,7 +99,9 @@ std::vector<std::string> find_pareto_front(const std::vector<CostData>& data, in
         bool is_dominated = false;
 
         for (const auto& other : data) {
-            if (dominates(other, current, num_objectives,max_budget)) {
+            std::cout << "Current Cost: " << current.objective1 << ", Other Cost: " << other.objective1 <<std::endl;
+            std::cout << "Results: " <<  dominates(other, current, num_objectives, max_budget) << std::endl;
+            if (dominates(other, current, num_objectives, max_budget)) {
                 is_dominated = true;
                 break;
             }
@@ -958,6 +960,7 @@ void PSO::exec_ipopt_all_sols(){
     std::string csv_path = fmt::format("{}/front/pareto_front.txt", path);
 
     fmt::print("before find pareto  \n");
+    std::cout << "Max Budget: " << max_budget_ << std::endl;
     std::vector<std::string> pf_files = findParetoFrontFiles(objectives, directory, max_budget_);
     misc_utilities::move_pf(ipopt_path, pf_path, pf_files);
 
