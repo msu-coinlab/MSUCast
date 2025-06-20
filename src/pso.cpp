@@ -784,8 +784,8 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     std::vector<Particle> rejects;
     
     // Find all of valid options
-    for (const auto& particle : gbest_) {
-        particles.set_gx(particle.get_fx()[0] - max_budget_); // total cost - upper limit 
+    for (auto& particle : gbest_) {
+        particle.set_gx(particle.get_fx()[0] - max_budget_); // total cost - upper limit 
         std::cout << "Particles gx: " << particle.get_gx() << std::endl;
         if (particle.get_gx() <= 0) {
             values.emplace_back(particle);
@@ -808,7 +808,7 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     }
 
     for(auto value:values){
-        std::cout << "Values: " << value << std::endl;
+        std::cout << "Values Cost: " << value.get_fx()[0] << std::endl;
     }
 
 
@@ -821,7 +821,7 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     Particle min_val = values[0];
     Particle max_val = values[values.size() - 1];
     Particle mid_val = values[(values.size()) / 2];
-    std::cout << "Min_val: " << min_val << " Mid value: " << mid_val << "Max Value: " << max_val << std::endl;
+    std::cout << "Min_val gx: " << min_val.get_gx() << " Mid value gx: " << mid_val.get_gx() << "Max Value gx: " << max_val.get_gx() << std::endl;
     std::cout << "Min_val Cost: " << min_val.get_fx()[0] << " Mid value Cost: " << mid_val.get_fx()[0] << "Max Value Cost: " << max_val.get_fx()[0] << std::endl;
     return {min_val, mid_val, max_val};
 }
