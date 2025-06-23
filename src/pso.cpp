@@ -821,7 +821,7 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     Particle min_val = values[0];
     Particle max_val = values[values.size() - 1];
     Particle mid_val = values[(values.size()) / 2];
-    std::cout << "Min_val gx: " << min_val.get_gx() << " Mid value gx: " << mid_val.get_gx() << "Max Value gx: " << max_val.get_gx() << std::endl;
+    std::cout << "Min_val gx: " << min_val.get_gx() << " Mid value gx: " << mid_val.get_gx() << " Max Value gx: " << max_val.get_gx() << std::endl;
     std::cout << "Min_val Cost: " << min_val.get_fx()[0] << " Mid value Cost: " << mid_val.get_fx()[0] << "Max Value Cost: " << max_val.get_fx()[0] << std::endl;
     return {min_val, mid_val, max_val};
 }
