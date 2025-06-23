@@ -780,16 +780,23 @@ void PSO::copy_parquet_files_for_ipopt(const std::string& path, const std::strin
 
 
 double PSO::find_gx(const double& cost){
+    /*
+        If the budget is less than zero just set the gx to be zero 
+        otherwise find the correct gx value
+    */
     return (max_budget_ > 0 ) ? cost - max_budget_ : 0;
 }
 
 std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
+    /**
+     * Finds the middle min mid max particle for for ipopt to run
+     */
     std::vector<Particle> values;
     std::vector<Particle> rejects;
     
     // Find all of valid options
     for (auto& particle : gbest_) {
-        particle.set_gx(find_gx(particle.get_fx()[0])); // total cost - upper limit 
+        particle.set_gx(find_gx(particle.get_fx()[0])); 
         std::cout << "Particles gx: " << particle.get_gx() << std::endl;
         if (particle.get_gx() <= 0) {
             values.emplace_back(particle);
@@ -826,36 +833,12 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     Particle max_val = values[values.size() - 1];
     Particle mid_val = values[(values.size()) / 2];
     std::cout << "Min_val gx: " << min_val.get_gx() << " Mid value gx: " << mid_val.get_gx() << " Max Value gx: " << max_val.get_gx() << std::endl;
-    std::cout << "Min_val Cost: " << min_val.get_fx()[0] << " Mid value Cost: " << mid_val.get_fx()[0] << "Max Value Cost: " << max_val.get_fx()[0] << std::endl;
+    std::cout << "Min_val Cost: " << min_val.get_fx()[0] << " Mid value Cost: " << mid_val.get_fx()[0] << " Max Value Cost: " << max_val.get_fx()[0] << std::endl;
     return {min_val, mid_val, max_val};
 }
 
 void PSO::exec_ipopt_all_sols(){
     Execute execute;
-    // int min_idx = 0;
-    // int max_idx = 0; 
-    // int mid_idx;
-    // std::vector<double> values;
-
-    // for (const auto& particle : gbest_) {
-    //     values.emplace_back(particle.get_fx()[0]);
-    // }
-
-    // // Step 1: Initialize a vector with indices 0 to values.size() - 1
-    // std::vector<size_t> indices(values.size());
-    // std::iota(indices.begin(), indices.end(), 0);
-
-    // // Step 2: Sort the indices based on comparing values from the values vector
-    // std::sort(indices.begin(), indices.end(),
-    //     [&values](size_t i1, size_t i2) { return values[i1] < values[i2]; });
-    // //for (const auto& particle : gbest_) {
-    // // min_idx is fine
-    // min_idx = indices[0];
-    // // max_idx should be the (first infeasible idx - 1), but if there are not enough feasible solution then consider infeasible as well
-    // max_idx = indices[indices.size() - 1];
-    // mid_idx = (min_idx + max_idx)/2;
-
-
 
     std::vector<Particle> particle_vec = get_min_mid_max_ipopt_position();
     std::string path = fmt::format("/opt/opt4cast/output/nsga3/{}", exec_uuid_);
@@ -887,11 +870,6 @@ void PSO::exec_ipopt_all_sols(){
         fmt::print("======================== best_animal_cost_: {}\n", animal_cost);
         fmt::print("======================== best_manure_cost_: {}\n", manure_cost);
        
-       // Not used was probs used for logging
-        // std::string postfix;
-        // if (idx == min_idx) postfix = "min";
-        // else if (idx == max_idx) postfix = "max";
-        // else postfix = "median";
 
         std::string report_loads_path = fmt::format("{}_reportloads.csv", parent_uuid_path);
         fmt::print("===================================================================================== Scenario_id: {}\n", scenario_.get_scenario_id());
@@ -1217,7 +1195,7 @@ void PSO::evaluate() {
 
             particles[i].set_animal_x(animal_x);
             auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", exec_path, exec_uuid);
-            scenario_.write_animal(animal_x, animal_filename);
+            scenario_.write_animal(animal_x, animal_filename, base_animal_bmp_inputs_);
             if (!std::filesystem::exists(animal_filename)) {
                 total_cost = 9999999999999.99;
                 particles[i].set_animal_cost(animal_cost);

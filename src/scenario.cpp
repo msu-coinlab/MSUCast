@@ -1167,7 +1167,7 @@ int Scenario::write_land(
             parquet::ParquetFileWriter::Open(new_bmps_outfile, my_schema, builder.build())};
 
     int counter = 0;
-    std::cout << "Adding the base BMP inputs" << std::endl;
+    std::cout << "Adding the base BMP land inputs" << std::endl;
     for (const auto& bmp : base_land_bmp_inputs) {
         // unpack all 12 fields from BmpRow:
         const auto& [
@@ -1260,8 +1260,7 @@ int Scenario::write_land(
     // return write_row ? 1 : 0;  // Return 1 if a row was written, 0 if not
 }
 
-int Scenario::write_animal ( const std::vector<std::tuple<int, int, int, int, int, double>>& animal_x,
-        const std::string& out_filename) {
+int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int, double>>& animal_x, const std::string& out_filename, std::vector<std::tuple<int, int, int, int, int, double>> base_animal_bmp_inputs) {
     if (animal_x.size() == 0) {
         return 0;
     }
@@ -1326,25 +1325,76 @@ int Scenario::write_animal ( const std::vector<std::tuple<int, int, int, int, in
     //builder.compression(parquet::Compression::ZSTD);
     builder.version(parquet::ParquetVersion::PARQUET_1_0);
     parquet::StreamWriter os{
-            parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build())};
+        parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build())};
 
+    std::cout << "Adding the base BMP Animal" << std::endl;
 
-    int idx = 0;
+    // This adds the base animal bmps 
     int counter = 0;
     double total_cost = 0.0;
-    for(auto [base_condition, county, load_src, animal_id, bmp, amount] : animal_x) {
+    for(auto[base_condition, county, load_src, animal_id, bmp, amount] : base_animal_bmp_inputs){
         auto [geography, geography2_id, fips, county_name, state_abbr] = geography_county_[county];
         auto state = counties_[county];
-        //int geography_id = 121; //121: Jefferson
-        int unit_id = 13;
+        int unit_id = 13; // au unit (from unit id table)
 
         auto key_bmp_cost = fmt::format("{}_{}", state, bmp);
         double cost = bmp_cost_[key_bmp_cost];
-        total_cost += cost;
-        int agency = 9;
+        int agency = 9; // Non-Federal
         double nreduction=0.0, preduction=0.0;
-        os<<counter+1<<bmp<<agency<<fmt::format("SU{}",counter)<<state<<geography2_id<<animal_id<<u_u_group_dict[load_src]<< unit_id<<amount<<nreduction<<preduction<<true<<""<<counter+1<<parquet::EndRow;
+
+        os
+            <<counter+1
+            <<bmp
+            <<agency
+            <<fmt::format("SU{}",counter)
+            <<state
+            <<geography2_id
+            <<animal_id
+            <<u_u_group_dict[load_src]
+            <<unit_id
+            <<amount
+            <<nreduction
+            <<preduction
+            <<true
+            <<""
+            <<counter+1
+            <<parquet::EndRow;
+
         counter++;
+    }
+
+
+    // This part add the additonal animal bmps
+    for(auto [base_condition, county, load_src, animal_id, bmp, amount] : animal_x) {
+        auto [geography, geography2_id, fips, county_name, state_abbr] = geography_county_[county];
+        auto state = counties_[county];
+        int unit_id = 13; // au unit (unit id table)
+
+        auto key_bmp_cost = fmt::format("{}_{}", state, bmp);
+        double cost = bmp_cost_[key_bmp_cost];
+        int agency = 9; // Non-Federal
+        double nreduction=0.0, preduction=0.0;
+
+        os
+            <<counter+1
+            <<bmp
+            <<agency
+            <<fmt::format("SU{}",counter)
+            <<state
+            <<geography2_id
+            <<animal_id
+            <<u_u_group_dict[load_src]
+            <<unit_id
+            <<amount
+            <<nreduction
+            <<preduction
+            <<true
+            <<""
+            <<counter+1
+            <<parquet::EndRow;
+
+        counter++;
+        total_cost += cost;
     }
 
     return counter;

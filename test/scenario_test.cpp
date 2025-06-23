@@ -58,7 +58,7 @@ int main (int argc, char *argv[]) {
     std::vector<std::tuple<int, int, int, int, int, double>> animal_x;
     total_cost += scenario.normalize_animal(x, animal_x); 
     auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", emo_path, exec_uuid);
-    scenario.write_animal(animal_x, animal_filename);
+    // scenario.write_animal(animal_x, animal_filename);
     generation_uuid_idx[exec_uuid] = 0;
 
     auto results = scenario.send_files(emo_uuid, exec_uuid_vec);
