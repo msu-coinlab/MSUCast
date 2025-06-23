@@ -106,7 +106,7 @@ private:
     std::string base_manure_bmp_file_;
     std::string out_dir_;
     double max_budget_;
-    double find_gx(const Particle& particle);
+    double find_gx(const double& particle);
     Execute execute;
     std::vector<std::vector<std::string>> exec_uuid_log_;
     std::vector<BmpRowLand> base_land_bmp_inputs_;
