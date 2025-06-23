@@ -779,13 +779,17 @@ void PSO::copy_parquet_files_for_ipopt(const std::string& path, const std::strin
 } 
 
 
+double PSO::find_gx(const Particle& particle){
+    return (max_budget_ > 0 ) ? particle.get_fx()[0] - max_budget_ : 0;
+}
+
 std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
     std::vector<Particle> values;
     std::vector<Particle> rejects;
     
     // Find all of valid options
     for (auto& particle : gbest_) {
-        particle.set_gx(particle.get_fx()[0] - max_budget_); // total cost - upper limit 
+        particle.set_gx(find_gx(particle)); // total cost - upper limit 
         std::cout << "Particles gx: " << particle.get_gx() << std::endl;
         if (particle.get_gx() <= 0) {
             values.emplace_back(particle);
@@ -1274,7 +1278,7 @@ void PSO::evaluate() {
         std::vector<std::string> result_vec;
         misc_utilities::split_str(key, '_', result_vec);
         auto stored_idx = generation_uuid_idx[result_vec[0]];
-        particles[stored_idx].set_gx(total_cost_vec[stored_idx] - max_budget_); // total cost - upper limit 
+        particles[stored_idx].set_gx(find_gx(total_cost_vec[stored_idx])); // total cost - upper limit 
         particles[stored_idx].set_fx(total_cost_vec[stored_idx], std::stod(result_vec[1]));
     } 
 
