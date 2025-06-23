@@ -68,9 +68,9 @@ namespace {
 
 
 int main (int argc, char *argv[]) {
-    int nparts = 20;
+    int nparts = 4;
     int nobjs = 2;
-    int max_iter = 30;
+    int max_iter = 2;
     double c1 = 1.4;
     double c2 = 1.4;
     double w = 0.7;
