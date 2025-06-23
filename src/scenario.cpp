@@ -1312,11 +1312,19 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
     fields.push_back(parquet::schema::PrimitiveNode::Make(
             "RowIndex", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
     ));
-    std::shared_ptr<arrow::io::FileOutputStream> outfile;
 
-    PARQUET_ASSIGN_OR_THROW(
-            outfile,
-            arrow::io::FileOutputStream::Open(out_filename));
+    std::shared_ptr<arrow::io::FileOutputStream> outfile;
+    std::shared_ptr<arrow::io::FileOutputStream> new_bmps_outfile;
+
+    std::string new_bmps_out_filename = out_filename;
+    auto pos = new_bmps_out_filename.rfind(".parquet");
+    if (pos != std::string::npos) {
+        new_bmps_out_filename.insert(pos, "_new_bmps");
+    }
+
+    PARQUET_ASSIGN_OR_THROW(outfile,arrow::io::FileOutputStream::Open(out_filename));
+    PARQUET_ASSIGN_OR_THROW(new_bmps_outfile, arrow::io::FileOutputStream::Open(new_bmps_out_filename));
+
 
     std::shared_ptr<parquet::schema::GroupNode> my_schema = std::static_pointer_cast<parquet::schema::GroupNode>(
             parquet::schema::GroupNode::Make("schema", parquet::Repetition::REQUIRED, fields));
@@ -1327,41 +1335,45 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
     parquet::StreamWriter os{
         parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build())};
 
+
+    parquet::StreamWriter new_bmp_os{
+        parquet::ParquetFileWriter::Open(new_bmps_outfile, my_schema, builder.build())};
+
     std::cout << "Adding the base BMP Animal" << std::endl;
 
     // This adds the base animal bmps 
     int counter = 0;
-    double total_cost = 0.0;
-    for(auto[base_condition, county, load_src, animal_id, bmp, amount] : base_animal_bmp_inputs){
-        auto [geography, geography2_id, fips, county_name, state_abbr] = geography_county_[county];
-        auto state = counties_[county];
-        int unit_id = 13; // au unit (from unit id table)
+    // double total_cost = 0.0; // Don't think it is running anything
+    // for(auto[base_condition, county, load_src, animal_id, bmp, amount] : base_animal_bmp_inputs){
+    //     auto [geography, geography2_id, fips, county_name, state_abbr] = geography_county_[county];
+    //     auto state = counties_[county];
+    //     int unit_id = 13; // au unit (from unit id table)
 
-        auto key_bmp_cost = fmt::format("{}_{}", state, bmp);
-        double cost = bmp_cost_[key_bmp_cost];
-        int agency = 9; // Non-Federal
-        double nreduction=0.0, preduction=0.0;
+    //     auto key_bmp_cost = fmt::format("{}_{}", state, bmp);
+    //     double cost = bmp_cost_[key_bmp_cost];
+    //     int agency = 9; // Non-Federal
+    //     double nreduction=0.0, preduction=0.0;
 
-        os
-            <<counter+1
-            <<bmp
-            <<agency
-            <<fmt::format("SU{}",counter)
-            <<state
-            <<geography2_id
-            <<animal_id
-            <<u_u_group_dict[load_src]
-            <<unit_id
-            <<amount
-            <<nreduction
-            <<preduction
-            <<true
-            <<""
-            <<counter+1
-            <<parquet::EndRow;
+    //     os
+    //         <<counter+1
+    //         <<bmp
+    //         <<agency
+    //         <<fmt::format("SU{}",counter)
+    //         <<state
+    //         <<geography2_id
+    //         <<animal_id
+    //         <<u_u_group_dict[load_src]
+    //         <<unit_id
+    //         <<amount
+    //         <<nreduction
+    //         <<preduction
+    //         <<true
+    //         <<""
+    //         <<counter+1
+    //         <<parquet::EndRow;
 
-        counter++;
-    }
+    //     counter++;
+    // }
 
 
     // This part add the additonal animal bmps
@@ -1392,9 +1404,25 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
             <<""
             <<counter+1
             <<parquet::EndRow;
+        // new_bmp_os
+        //     <<counter+1
+        //     <<bmp
+        //     <<agency
+        //     <<fmt::format("SU{}",counter)
+        //     <<state
+        //     <<geography2_id
+        //     <<animal_id
+        //     <<u_u_group_dict[load_src]
+        //     <<unit_id
+        //     <<amount
+        //     <<nreduction
+        //     <<preduction
+        //     <<true
+        //     <<""
+        //     <<counter+1
+        //     <<parquet::EndRow;
 
         counter++;
-        total_cost += cost;
     }
 
     return counter;

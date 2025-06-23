@@ -581,7 +581,8 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
      std::ifstream in(scenario_filename_);
      json scenario;
      in >> scenario;
-     max_budget_ = scenario["total_budget"].get<double>(); 
+     max_budget_ = (scenario["total_budget"].get<double>() > 0 )  ? scenario["total_budget"].get<double>(): std::numeric_limits<double>::infinity(); 
+     
 }
 
 PSO::PSO(const PSO &p) {
