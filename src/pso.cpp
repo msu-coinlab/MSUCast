@@ -823,6 +823,8 @@ std::vector<Particle> PSO::get_min_mid_max_ipopt_position() {
         std::cout << "Values Cost: " << value.get_fx()[0] << std::endl;
     }
 
+    std::cout << "Number of solutions: " << values.size() << " gbest_ size "<< gbest_.size() <<  std::endl;
+
 
     std::sort(values.begin(), values.end(),
         [](const auto& a, const auto& b) {
