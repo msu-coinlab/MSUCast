@@ -181,11 +181,16 @@ public:
     void append_lc_x(const std::vector<std::tuple<int, int, int, int, double, int, int, int, int>>& lc_x);
 
     std::vector<std::tuple<int, int, int, int, int, int, double>> read_land(const std::string& filename);
+    std::vector<std::tuple<int, int, int, int, int, int, int, double, double>> read_animal(const std::string& filename);
 
     int write_land_barefoot(
         const std::vector<std::tuple<int, int, int, int, int, int, double>>& x, 
         const std::string& out_filename
     ); 
+    int write_animal_barefoot(
+        std::vector<std::tuple<int, int, int, int, int, int, int, double, double>>& rows,
+        const std::string& out_filename
+    );
 private:
    /**@name Methods to block default compiler methods.
     *
@@ -229,7 +234,6 @@ private:
 
     std::unordered_map<std::string, double> amount_;
     std::unordered_map<std::string, std::vector<std::vector<int>>> efficiency_;
-    //a partir de aqui hay que revisar
     std::unordered_map<std::string, std::vector<int>> lrseg_;
     std::unordered_map<std::string, std::vector<double>> eta_dict_;
     std::unordered_map<std::string, std::vector<double>> phi_dict_;

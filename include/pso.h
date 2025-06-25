@@ -110,7 +110,7 @@ private:
     Execute execute;
     std::vector<std::vector<std::string>> exec_uuid_log_;
     std::vector<BmpRowLand> base_land_bmp_inputs_;
-    std::vector<std::tuple<int, int, int, int, int, double>> base_animal_bmp_inputs_;
+    std::vector<BmpRowAnimal> base_animal_bmp_inputs_;
     std::vector<std::tuple<int, int, int, int, int, double>> base_manure_bmp_inputs_;
     // Ipopt functions used 
     void exec_ipopt();

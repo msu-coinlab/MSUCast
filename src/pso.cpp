@@ -357,22 +357,6 @@ namespace {
 }
 
 
-// Define a plain‐old‐data struct matching your schema
-// struct BmpRowLand {
-//   int32_t  BmpSubmittedId;
-//   int32_t  AgencyId;
-//   std::string StateUniqueIdentifier;
-//   int32_t  StateId;
-//   int32_t  BmpId;
-//   int32_t  GeographyId;
-//   int32_t  LoadSourceGroupId;
-//   int32_t  UnitId;
-//   double   Amount;
-//   bool     IsValid;
-//   std::string ErrorMessage;
-//   int32_t  RowIndex;
-// };
-
 std::vector<BmpRowLand> read_parquet_file_land(const std::string& file_name) {
   // 1) Open file
   arrow::MemoryPool* pool = arrow::default_memory_pool();
@@ -463,6 +447,76 @@ std::vector<BmpRowLand> read_parquet_file_land(const std::string& file_name) {
   }
 
   return result;
+}
+
+std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name) {
+    using arrow::default_memory_pool;
+    using parquet::arrow::FileReader;
+
+    // --- (open file, open reader, read table) ---
+    std::shared_ptr<arrow::io::ReadableFile> infile;
+    PARQUET_ASSIGN_OR_THROW(
+      infile,
+      arrow::io::ReadableFile::Open(file_name, default_memory_pool())
+    );
+
+    std::unique_ptr<FileReader> reader;
+    PARQUET_THROW_NOT_OK(
+      parquet::arrow::OpenFile(infile, default_memory_pool(), &reader)
+    );
+
+    std::shared_ptr<arrow::Table> table;
+    PARQUET_THROW_NOT_OK(reader->ReadTable(&table));
+    int64_t nrows = table->num_rows();
+    if (nrows == 0) return {};
+
+    // Helper: concatenate all chunks of column idx
+    auto concat_column = [&](int idx) {
+      auto col = table->column(idx);
+      if (col->num_chunks() == 1) return col->chunk(0);
+      std::shared_ptr<arrow::Array> all;
+      PARQUET_ASSIGN_OR_THROW(
+        all,
+        arrow::Concatenate(col->chunks(), default_memory_pool())
+      );
+      return all;
+    };
+
+    // 3) Cast each column once:
+    auto arr0  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(0));
+    auto arr1  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(1));
+    auto arr2  = std::static_pointer_cast<arrow::StringArray>(  concat_column(2));
+    auto arr3  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(3));
+    auto arr4  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(4));
+    auto arr5  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(5));
+    auto arr6  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(6));
+    auto arr7  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(7));
+    auto arr8  = std::static_pointer_cast<arrow::DoubleArray>(  concat_column(8));
+    auto arr9  = std::static_pointer_cast<arrow::BooleanArray>( concat_column(9));
+    auto arr10 = std::static_pointer_cast<arrow::StringArray>(  concat_column(10));
+    auto arr11 = std::static_pointer_cast<arrow::Int32Array>(   concat_column(11));
+
+    // 4) Pull out rows into vector<Row>
+    std::vector<Row> result;
+    result.reserve(nrows);
+    for (int64_t i = 0; i < nrows; ++i) {
+      Row r;
+      r.BmpSubmittedId       = arr0->Value(i);
+      r.AgencyId             = arr1->Value(i);
+      r.StateUniqueIdentifier= arr2->GetString(i);
+      r.StateId              = arr3->Value(i);
+      r.BmpId                = arr4->Value(i);
+      r.GeographyId          = arr5->Value(i);
+      r.LoadSourceGroupId    = arr6->Value(i);
+      r.UnitId               = arr7->Value(i);
+      r.Amount               = arr8->Value(i);
+      r.IsValid              = arr9->Value(i);
+      r.ErrorMessage         = arr10->GetString(i);
+      r.RowIndex             = arr11->Value(i);
+      result.push_back(std::move(r));
+    }
+
+    return result;
 }
 
 
@@ -574,7 +628,7 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
 
     // unpack the parquet file and store them as vectore tuples 
     base_land_bmp_inputs_ = read_parquet_file_land(base_land_bmp_file);
-    base_animal_bmp_inputs_ = read_parquet_file(base_animal_bmp_file);
+    base_animal_bmp_inputs_ = read_parquet_file_animal(base_animal_bmp_file);
     base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
 
      // Read in the scecario file to get the constraint
