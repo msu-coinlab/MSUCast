@@ -485,16 +485,19 @@ std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name)
     // 3) Cast each column once:
     auto arr0  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(0));
     auto arr1  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(1));
-    auto arr2  = std::static_pointer_cast<arrow::StringArray>(  concat_column(2));
-    auto arr3  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(3));
+    auto arr2  = std::static_pointer_cast<arrow::Int32Array>(  concat_column(2));
+    auto arr3  = std::static_pointer_cast<arrow::StringArray>(   concat_column(3));
     auto arr4  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(4));
     auto arr5  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(5));
     auto arr6  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(6));
     auto arr7  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(7));
-    auto arr8  = std::static_pointer_cast<arrow::DoubleArray>(  concat_column(8));
-    auto arr9  = std::static_pointer_cast<arrow::BooleanArray>( concat_column(9));
-    auto arr10 = std::static_pointer_cast<arrow::StringArray>(  concat_column(10));
-    auto arr11 = std::static_pointer_cast<arrow::Int32Array>(   concat_column(11));
+    auto arr8  = std::static_pointer_cast<arrow::Int32Array>(   concat_column(8));
+    auto arr9  = std::static_pointer_cast<arrow::DoubleArray>(  concat_column(9));
+    auto arr10  = std::static_pointer_cast<arrow::DoubleArray>(  concat_column(10));
+    auto arr11  = std::static_pointer_cast<arrow::DoubleArray>(  concat_column(11));
+    auto arr12  = std::static_pointer_cast<arrow::BooleanArray>( concat_column(12));
+    auto arr13 = std::static_pointer_cast<arrow::StringArray>(  concat_column(13));
+    auto arr14 = std::static_pointer_cast<arrow::Int32Array>(   concat_column(14));
 
     // 4) Pull out rows into vector<Row>
     std::vector<Row> result;
@@ -502,17 +505,20 @@ std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name)
     for (int64_t i = 0; i < nrows; ++i) {
       Row r;
       r.BmpSubmittedId       = arr0->Value(i);
-      r.AgencyId             = arr1->Value(i);
-      r.StateUniqueIdentifier= arr2->GetString(i);
+      r.BmpId                = arr1->Value(i);
+      r.AgencyId             = arr2->Value(i);
+      r.StateUniqueIdentifier= arr3->GetString(i);
       r.StateId              = arr3->Value(i);
-      r.BmpId                = arr4->Value(i);
       r.GeographyId          = arr5->Value(i);
-      r.LoadSourceGroupId    = arr6->Value(i);
-      r.UnitId               = arr7->Value(i);
-      r.Amount               = arr8->Value(i);
-      r.IsValid              = arr9->Value(i);
-      r.ErrorMessage         = arr10->GetString(i);
-      r.RowIndex             = arr11->Value(i);
+      r.AnimalGroupId        = arr6->Value(i);
+      r.LoadSourceGroupId    = arr7->Value(i);
+      r.UnitId               = arr8->Value(i);
+      r.Amount               = arr9->Value(i);
+      r.NReductionFraction    = arr10->Value(i);
+      r.PReductionFraction    = arr11->Value(i);
+      r.IsValid              = arr12->Value(i);
+      r.ErrorMessage         = arr13->GetString(i);
+      r.RowIndex             = arr14->Value(i);
       result.push_back(std::move(r));
     }
 
