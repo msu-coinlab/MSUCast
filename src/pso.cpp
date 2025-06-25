@@ -500,15 +500,15 @@ std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name)
     auto arr14 = std::static_pointer_cast<arrow::Int32Array>(   concat_column(14));
 
     // 4) Pull out rows into vector<Row>
-    std::vector<Row> result;
+    std::vector<BmpRowAnimal> result;
     result.reserve(nrows);
     for (int64_t i = 0; i < nrows; ++i) {
-      Row r;
+      BmpRowAnimal r;
       r.BmpSubmittedId       = arr0->Value(i);
       r.BmpId                = arr1->Value(i);
       r.AgencyId             = arr2->Value(i);
       r.StateUniqueIdentifier= arr3->GetString(i);
-      r.StateId              = arr3->Value(i);
+      r.StateId              = arr4->Value(i);
       r.GeographyId          = arr5->Value(i);
       r.AnimalGroupId        = arr6->Value(i);
       r.LoadSourceGroupId    = arr7->Value(i);

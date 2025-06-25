@@ -931,6 +931,8 @@ bool EPA_NLP::eval_h(
 }
 
 
+
+
 void EPA_NLP::save_files(
         Index                      n,
         const Number *x
@@ -1042,56 +1044,6 @@ std::vector<std::tuple<int, int, int, int, int, int, double>> EPA_NLP::read_land
 
 }
 
-std::vector<std::tuple<int, int, int, int, int, int, int, double, double>> EPA_NLP::read_animal(const std::string& filename) {
-    // AgencyId, StateId, BmpId, GeographyId, LoadSourceGroupId, UnitId, Amount 
-    std::vector<std::tuple<int, int, int, int, int, int, int, double, double> > result;
-    if (!fs::exists(filename)) {
-        return result;
-    }
-
-    // Open Parquet file
-    std::shared_ptr<arrow::io::ReadableFile> infile;
-    PARQUET_ASSIGN_OR_THROW(infile, arrow::io::ReadableFile::Open(filename));
-    
-    // Create Parquet file reader
-    std::unique_ptr<parquet::arrow::FileReader> arrow_reader;
-    PARQUET_THROW_NOT_OK(parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &arrow_reader));
-    
-    // Read the table from the file
-    std::shared_ptr<arrow::Table> table;
-    PARQUET_THROW_NOT_OK(arrow_reader->ReadTable(&table));
-    
-    // Retrieve columns
-    auto bmp_id = std::static_pointer_cast<arrow::Int32Array>(table->column(1)->chunk(0));
-    auto agency_id = std::static_pointer_cast<arrow::Int32Array>(table->column(2)->chunk(0));
-    auto state_id = std::static_pointer_cast<arrow::Int32Array>(table->column(4)->chunk(0));
-    auto geography_id = std::static_pointer_cast<arrow::Int32Array>(table->column(5)->chunk(0));
-    auto animal_group_id = std::static_pointer_cast<arrow::Int32Array>(table->column(6)->chunk(0));
-    auto load_source_group_id = std::static_pointer_cast<arrow::Int32Array>(table->column(7)->chunk(0));
-    auto unit_id = std::static_pointer_cast<arrow::Int32Array>(table->column(8)->chunk(0));
-    auto amount = std::static_pointer_cast<arrow::DoubleArray>(table->column(9)->chunk(0));
-    auto n_reduction_fraction = std::static_pointer_cast<arrow::DoubleArray>(table->column(10)->chunk(0));
-    auto p_reduction_fraction = std::static_pointer_cast<arrow::DoubleArray>(table->column(11)->chunk(0));
-
-    // Iterate over the rows and store in result vector
-    for (int64_t i = 0; i < table->num_rows(); ++i) {
-        result.emplace_back(
-            bmp_id->Value(i),
-            agency_id->Value(i),
-            state_id->Value(i),
-            geography_id->Value(i),
-            animal_group_id->Value(i),
-            load_source_group_id->Value(i),
-            unit_id->Value(i),
-            amount->Value(i),
-            n_reduction_fraction->Value(i),
-            p_reduction_fraction->Value(i)
-        );
-    }
-    return result;
-
-}
-
 int EPA_NLP::write_land_barefoot(
         const std::vector<std::tuple<int, int, int, int, int, int, double>>& x, 
         const std::string& out_filename
@@ -1192,114 +1144,6 @@ int EPA_NLP::write_land_barefoot(
         counter++;
     }
 
-    return counter;
-}
-
-int EPA_NLP::write_animal_barefoot(
-    std::vector<std::tuple<int, int, int, int, int, int, int, double, double>>& rows,
-    const std::string& out_filename
-) {
-    if (rows.empty()) return 0;
-
-    // 1) Arrow schema
-    auto schema = arrow::schema({
-        arrow::field("BmpSubmittedId",        arrow::int32()),
-        arrow::field("BmpId",        arrow::int32()),
-        arrow::field("AgencyId",              arrow::int32()),
-        arrow::field("StateUniqueIdentifier", arrow::utf8()),
-        arrow::field("StateId",               arrow::int32()),
-        arrow::field("GeographyId",           arrow::int32()),
-        arrow::field("AnimalGroupId",         arrow::int32()),
-        arrow::field("LoadSourceGroupId",     arrow::int32()),
-        arrow::field("UnitId",                arrow::int32()),
-        arrow::field("Amount",                arrow::float64()), 
-        arrow::field("NReductionFraction",    arrow::float64()),
-        arrow::field("PReductionFraction",    arrow::float64()),
-        arrow::field("IsValid",               arrow::boolean()),
-        arrow::field("ErrorMessage",          arrow::utf8()),
-        arrow::field("RowIndex",              arrow::int32()),
-    });
-
-    // 2) Builders
-    arrow::Int32Builder    bmp_submitted_id_b, agency_id_b;
-    arrow::StringBuilder   state_uid_b, error_msg_b;
-    arrow::Int32Builder    state_id_b, bmp_id_b, geography_id_b;
-    arrow::Int32Builder    load_source_b, unit_id_b, row_index_b;
-    arrow::DoubleBuilder   amount_b;
-    arrow::BooleanBuilder  is_valid_b;
-
-    // 3) Open output Parquet file
-    std::shared_ptr<arrow::io::FileOutputStream> outfile;
-    PARQUET_ASSIGN_OR_THROW(
-      outfile,
-      arrow::io::FileOutputStream::Open(out_filename)
-    );
-
-    // 4) Build Parquet schema nodes
-    parquet::schema::NodeVector fields;
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "BmpSubmittedId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "BmpId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "AgencyId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "StateUniqueIdentifier", parquet::Repetition::REQUIRED,
-        parquet::Type::BYTE_ARRAY, parquet::ConvertedType::UTF8));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "StateId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "GeographyId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "AnimalGroupId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "LoadSourceGroupId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "UnitId", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "Amount", parquet::Repetition::REQUIRED,
-        parquet::Type::DOUBLE));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "IsValid", parquet::Repetition::REQUIRED,
-        parquet::Type::BOOLEAN));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "ErrorMessage", parquet::Repetition::REQUIRED,
-        parquet::Type::BYTE_ARRAY, parquet::ConvertedType::UTF8));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-        "RowIndex", parquet::Repetition::REQUIRED,
-        parquet::Type::INT32, parquet::ConvertedType::INT_32));
-
-    auto group_node = std::static_pointer_cast<parquet::schema::GroupNode>(
-        parquet::schema::GroupNode::Make("schema", parquet::Repetition::REQUIRED, fields)
-    );
-
-    // 5) Create a StreamWriter
-    parquet::WriterProperties::Builder wp_builder;
-    wp_builder.version(parquet::ParquetVersion::PARQUET_1_0);
-    auto writer_props = wp_builder.build();
-
-    parquet::StreamWriter os{
-        parquet::ParquetFileWriter::Open(outfile, group_node, writer_props)
-    };
-
-    // 6) Append each struct as one row
-    int idx = 0;
-    int counter = 0;
-    for (const auto& entry : rows) {
-        auto [bmp_id, agency_id, state_id, geography_id, animal_group_id, load_source_group_id, unit_id, amount, n_reduction_fraction, p_reduction_fraction] = entry;
-        os<<counter+1<<bmp_id<<agency_id<<fmt::format("SU{}",idx)<<state_id<<geography_id<<animal_group_id<<load_source_group_id<<unit_id<<amount<<n_reduction_fraction<<p_reduction_fraction<<true<<""<<idx+1<<parquet::EndRow;
-        idx++;
-        counter++;
-    }
-    
     return counter;
 }
 
@@ -1533,6 +1377,7 @@ void EPA_NLP::finalize_solution(
     auto uuid = get_uuid();
     std::cout << "Base UUID: " << uuid << std::endl;
    
+
     auto base_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", uuid);
     misc_utilities::mkdir(fmt::format("{}/ipopt_tmp", base_path));
     std::string out_filename = fmt::format("{}/ipopt_tmp/{}_impbmpsubmittedland.parquet", base_path, current_iteration_);
@@ -1554,6 +1399,6 @@ void EPA_NLP::finalize_solution(
     std::ofstream cost_file(cost_filename);
     cost_file<<json_obj.dump();
     cost_file.close();
+
     write_land_json( ef_x, out_filename_json);
 }
-

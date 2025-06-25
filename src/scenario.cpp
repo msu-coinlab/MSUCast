@@ -1351,6 +1351,7 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
         StateUniqueIdentifier,
         StateId,
         GeographyId,
+        AnimalGroupId,
         LoadSourceGroupId,
         UnitId,
         Amount,
