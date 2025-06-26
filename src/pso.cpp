@@ -450,6 +450,7 @@ std::vector<BmpRowLand> read_parquet_file_land(const std::string& file_name) {
 }
 
 std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name) {
+    std::cout << "file_name: " << file_name << std::endl;
     using arrow::default_memory_pool;
     using parquet::arrow::FileReader;
 
@@ -521,6 +522,8 @@ std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name)
       r.RowIndex             = arr14->Value(i);
       result.push_back(std::move(r));
     }
+
+    std::cout << "result size: " << result.size() << std::endl;
 
     return result;
 }
@@ -635,7 +638,7 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     // unpack the parquet file and store them as vectore tuples 
     base_land_bmp_inputs_ = read_parquet_file_land(base_land_bmp_file);
     base_animal_bmp_inputs_ = read_parquet_file_animal(base_animal_bmp_file);
-    base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
+    // base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
 
      // Read in the scecario file to get the constraint
      std::ifstream in(scenario_filename_);
@@ -1255,19 +1258,31 @@ void PSO::evaluate() {
             //fmt::print("animal_cost: {}\n", animal_cost);
             particles[i].set_animal_cost(animal_cost);
             total_cost += animal_cost;
-
             particles[i].set_animal_x(animal_x);
             auto animal_filename = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", exec_path, exec_uuid);
-            scenario_.write_animal(animal_x, animal_filename, base_animal_bmp_inputs_);
-            if (!std::filesystem::exists(animal_filename)) {
-                total_cost = 9999999999999.99;
-                particles[i].set_animal_cost(animal_cost);
-                particles[i].set_fx(total_cost, total_cost);
-                particles[i].set_gx(total_cost); 
-                flag = false;
-                //continue;
+            std::cout << "Writing the animal file" << std::endl;
+            auto flag = scenario_.write_animal(animal_x, animal_filename, base_animal_bmp_inputs_);
+            if(flag == 0){
+                std::filesystem::path exec_path_obj(exec_path);
+                std::filesystem::path exec_uuid_str(exec_uuid);
+
+                // Handle animal files
+                std::filesystem::path animal_filename = exec_path_obj / (exec_uuid_str.string() + "_impbmpsubmittedanimal.parquet");
+                std::filesystem::copy(base_animal_bmp_file_, animal_filename, std::filesystem::copy_options::overwrite_existing);
+                std::cout << "Animal Disabled file path:" << animal_filename << std::endl;
+                scenario_.write_animal_json(animal_x, replace_ending(animal_filename, ".parquet", ".json"));
             }
-            scenario_.write_animal_json(animal_x, replace_ending(animal_filename, ".parquet", ".json"));
+            else{
+                if (!std::filesystem::exists(animal_filename)) {
+                    total_cost = 9999999999999.99;
+                    particles[i].set_animal_cost(animal_cost);
+                    particles[i].set_fx(total_cost, total_cost);
+                    particles[i].set_gx(total_cost); 
+                    flag = false;
+                    //continue;
+                }
+                scenario_.write_animal_json(animal_x, replace_ending(animal_filename, ".parquet", ".json"));
+            }
         }else{ 
             std::filesystem::path exec_path_obj(exec_path);
             std::filesystem::path exec_uuid_str(exec_uuid);

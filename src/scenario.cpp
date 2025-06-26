@@ -1383,17 +1383,16 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
         counter++;
     }
 
-
     // This part add the additonal animal bmps
     for(auto [base_condition, county, load_src, animal_id, bmp, amount] : animal_x) {
         auto [geography, geography2_id, fips, county_name, state_abbr] = geography_county_[county];
         auto state = counties_[county];
         int unit_id = 13; // au unit (unit id table)
-
         auto key_bmp_cost = fmt::format("{}_{}", state, bmp);
         double cost = bmp_cost_[key_bmp_cost];
         int agency = 9; // Non-Federal
-        double nreduction=0.0, preduction=0.0;
+        double nreduction=0.0;
+        double preduction=0.0;
 
         os
             <<counter+1
@@ -1412,6 +1411,7 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
             <<""
             <<counter+1
             <<parquet::EndRow;
+
         new_bmp_os
             <<counter+1
             <<bmp
