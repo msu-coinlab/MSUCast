@@ -158,11 +158,11 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         //***** ANIMAL *****
         auto parent_animal_path = fmt::format("{}_impbmpsubmittedanimal.parquet", parent_uuid_path);
         auto dst_animal_path = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", exec_path_, uuids[i]);
+        misc_utilities::copy_file(parent_animal_path, dst_animal_path);  
 
         //***** MANURE TRANSPORT *****
         auto parent_manure_path = fmt::format("{}_impbmpsubmittedmanuretransport.parquet", parent_uuid_path);
         auto dst_manure_path = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", exec_path_, uuids[i]);
-
         misc_utilities::copy_file(parent_manure_path, dst_manure_path);        
     }
 
