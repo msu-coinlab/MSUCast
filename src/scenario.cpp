@@ -924,7 +924,7 @@ double Scenario::normalize_animal(const std::vector<double>& x, std::vector<std:
             //double norm_pct =  (double) pct / sum;            
             double norm_pct =  (MAX_PCT_ANIMAL_BMP*pct) / sum;
             std::cout << "Normalize_animal PCT: "<< pct << " Sum: " << sum <<  " norm_pct: " << norm_pct << " Animal_[key]: " << animal_[key] << std::endl;
-            if (norm_pct * animal_[key] > 1.0) {
+            if (norm_pct * animal_[key] > 0.0) { // [TEST!] Putting 0.0 as the threshold for testing
                 double amount = (norm_pct * animal_[key]);
                 auto state = counties_[county];
                 std::string key_bmp_cost = fmt::format("{}_{}", state, bmp);
