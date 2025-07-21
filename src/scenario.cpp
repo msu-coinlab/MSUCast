@@ -921,9 +921,9 @@ double Scenario::normalize_animal(const std::vector<double>& x, std::vector<std:
         double pct_accum = 0.0;
         //fmt::format("grp_tmp: {}\n", grp_tmp.size());
         for (auto [pct, bmp]: grp_tmp) {
-            //double norm_pct =  (double) pct / sum;
-
+            //double norm_pct =  (double) pct / sum;            
             double norm_pct =  (MAX_PCT_ANIMAL_BMP*pct) / sum;
+            std::cout << "Normalize_animal PCT: "<< pct << " Sum: " << sum <<  " norm_pct: " << norm_pct << " Animal_[key]: " << animal_[key] << std:endl;
             if (norm_pct * animal_[key] > 1.0) {
                 double amount = (norm_pct * animal_[key]);
                 auto state = counties_[county];
