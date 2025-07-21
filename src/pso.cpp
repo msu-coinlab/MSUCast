@@ -1253,6 +1253,7 @@ void PSO::evaluate() {
             std::filesystem::copy(base_land_bmp_file_,land_filename, std::filesystem::copy_options::overwrite_existing);
             std::cout << "Land Disabled file path:" << land_filename << std::endl;
         }
+
         if(is_animal_enabled_){
             auto animal_cost = scenario_.normalize_animal(x, animal_x); 
             //fmt::print("animal_cost: {}\n", animal_cost);
@@ -1292,6 +1293,7 @@ void PSO::evaluate() {
             std::filesystem::copy(base_animal_bmp_file_, animal_filename, std::filesystem::copy_options::overwrite_existing);
             std::cout << "Animal Disabled file path:" << animal_filename << std::endl;
         }
+        
         if(is_manure_enabled_){
             auto manure_cost = scenario_.normalize_manure(x, manure_x); 
             //fmt::print("manure_cost: {}\n", manure_cost);

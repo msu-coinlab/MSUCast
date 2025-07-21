@@ -127,7 +127,7 @@ std::unordered_map<std::string, double> read_loads(std::string loads_filename) {
                     std::string source_file = fmt::format("{}/{}{}", source_dir,  file_prefix,  file_postfix);
                     std::string dest_file = fmt::format("{}/{}{}", destination_dir,  iter,  file_postfix);
         
-                    fmt::print("Moving file: {} to {}\n", source_file, dest_file);
+                    fmt::print("Moving file pf: {} to {}\n", source_file, dest_file);
                     // Move the file
                     if (fs::exists(source_file)) {
                         fs::rename(source_file, dest_file);

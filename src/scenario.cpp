@@ -935,7 +935,7 @@ double Scenario::normalize_animal(const std::vector<double>& x, std::vector<std:
         }
     }
 
-    //std::cout<<"animal_x: "<<animal_x.size()<<std::endl;
+    std::cout<<"animal_x sizes: "<<animal_x.size()<<std::endl;
     return total_cost;
 }
 
