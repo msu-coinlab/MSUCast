@@ -77,7 +77,7 @@ int main(
     path_out = argv[3];
     int pollutant_idx = std::atoi(argv[4]); // 0
     double reduction= 1.0 - std::atof(argv[5]); // 0.9
-    int nsteps = std::atoi(argv[6]); //5
+    int nsteps = std::atoi(argv[6]); 
     
     bool evaluate_cast = true;
 

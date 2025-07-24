@@ -973,7 +973,7 @@ void PSO::exec_ipopt_all_sols(){
                 pollutant_idx, //0
                 ipopt_reduction, //0.30
                 nsteps,//10
-                1,
+                1, // Evalute using Cast system
                 parent_uuid_path,
                 path,
                 base_scenario_uuid,

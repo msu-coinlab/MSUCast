@@ -94,7 +94,7 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         auto current_land_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedland.parquet");
         auto dst_land_path = fmt::format("{}/{}_impbmpsubmittedland.parquet", exec_path_, uuids[i]);
         std::vector<std::tuple<int, int, int, int, int, int, double> > parent_land = mynlp->read_land(parent_land_path);
-        std::vector<std::tuple<int, int, int, int, int, int, double> >  current_land = mynlp->read_land(current_land_path);
+        std::vector<std::tuple<int, int, int, int, int, int, double> > current_land = mynlp->read_land(current_land_path);
         parent_land.insert(parent_land.end(), current_land.begin(), current_land.end());
         mynlp->write_land_barefoot(parent_land, dst_land_path);
         // merge the new bmps with the new bmps added on the top of the base
@@ -117,11 +117,13 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         json current_land_json = misc_utilities::read_json_file(current_land_json_path);
         */
 
-        //***** ANIMAL *****
+        //***** ANIMAL ***** 
+        // This seems to be old code that was copied and pasted from land with just name changes 
+        // Like mynlp->read_animal does not exiest July 24 
         // auto parent_animal_path = fmt::format("{}_impbmpsubmittedanimal.parquet", parent_uuid_path);
         // auto current_animal_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedanimal.parquet");
         // auto dst_animal_path = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", exec_path_, uuids[i]);
-        // std::vector<std::tuple<int, int, int, int, int, int, int, double, double>> parent_animal = mynlp->read_animal(parent_animal_path);
+        //std::vector<std::tuple<int, int, int, int, int, int, int, double, double>> parent_animal = mynlp->read_animal(parent_animal_path);
         // std::vector<std::tuple<int, int, int, int, int, int, int, double, double>> current_animal = mynlp->read_animal(current_animal_path);
         // parent_animal.insert(parent_animal.end(), current_animal.begin(), current_animal.end());
         // mynlp->write_animal_barefoot(parent_animal, dst_animal_path);
@@ -160,11 +162,8 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         auto dst_animal_path = fmt::format("{}/{}_impbmpsubmittedanimal.parquet", exec_path_, uuids[i]);
         misc_utilities::copy_file(parent_animal_path, dst_animal_path);  
         auto parent_animal_json_path = fmt::format("{}_impbmpsubmittedanimal.json", parent_uuid_path);
-        auto current_animal_json_path = fmt::format("{}/ipopt_tmp/{}_{}", base_path, i,"impbmpsubmittedanimal.json");
         auto dst_animal_json_path = fmt::format("{}/{}_impbmpsubmittedanimal.json", exec_path_, uuids[i]);
-        misc_utilities::merge_json_files(current_animal_json_path,
-                        parent_animal_json_path,  
-                        dst_animal_json_path);
+        misc_utilities::copy_file(parent_animal_json_path, dst_animal_json_path);  
 
         //***** MANURE TRANSPORT *****
         auto parent_manure_path = fmt::format("{}_impbmpsubmittedmanuretransport.parquet", parent_uuid_path);
