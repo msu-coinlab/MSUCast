@@ -1582,14 +1582,15 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
             std::cout << "Result: " << result << std::endl;
             std::cout << "result != manure_counties_.end()" << result != manure_counties_.end() <<  std::endl;
             std::cout << "stored_manure_dry_lbs > 0.0" << tored_manure_dry_lbs > 0.0 << std::endl;
-            
+
             if(result != manure_counties_.end() && stored_manure_dry_lbs > 0.0) {
                 auto key = fmt::format("{}_{}_{}", county, load_source_id, animal_id);
                 manure_dry_lbs[key] += stored_manure_dry_lbs;
                 auto neighbors = neighbors_dict_[county_str]; 
                 std::sort(neighbors.begin(), neighbors.end());
                 manure_all_[key] = neighbors; 
-                std::cout << "manure_all_[key]" << manure_all_[key] << std::endl;
+                std::cout << "aDD to key manure_all_[key]" << std::endl;
+            
             }
         }
     }
