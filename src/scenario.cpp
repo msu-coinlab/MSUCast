@@ -117,6 +117,8 @@ void Scenario::init(const std::string& filename, const std::string& filename_sce
 
     if (is_manure_enabled) {
         //manure_counties_ = {"43"};//102: Nelson
+
+        
         auto neighbors_file = "/opt/opt4cast/csvs/cast_neighbors.json";
         load_neighbors(neighbors_file);
         manure_dry_lbs_ = read_manure_nutrients(manure_nutrients_file); //call it after load_neighbors
@@ -1584,6 +1586,9 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
             auto county_str = std::to_string(county);
             auto result = std::ranges::find(manure_counties_, county_str);
 
+            for (const std::string& county : manure_counties_) {
+                std::cout << " manure_counties_ " << county << std::endl;
+            }
               
             std::cout << "stored_manure_dry_lbs > 0.0" << stored_manure_dry_lbs << std::endl;
 
