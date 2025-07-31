@@ -1550,6 +1550,9 @@ int Scenario::write_manure( const std::vector<std::tuple<int, int, int, int, int
 
 
 std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const std::string& filename) {
+
+    std::cout << "In read_manure_nutrients " << std::endl;
+
     std::unordered_map<std::string, double> manure_dry_lbs;
     std::shared_ptr<arrow::io::ReadableFile> infile;
     PARQUET_ASSIGN_OR_THROW(infile, arrow::io::ReadableFile::Open(filename, arrow::default_memory_pool()));
@@ -1568,8 +1571,10 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
     int storedManureDryLbsIdx = table->schema()->GetFieldIndex("StoredManureDryLbs");
 
     for (int i = 0; i < table->num_rows(); i++) {
+        std::cout << "In rows for loop " << std::endl;
         int nutrient_id = std::static_pointer_cast<arrow::Int32Array>(table->column(nutrientIdIdx)->chunk(0))->Value(i);
         if (nutrient_id == 1) {
+            std::cout << "nutrient_id ==1" << std::endl;
             int lrseg_id = std::static_pointer_cast<arrow::Int32Array>(table->column(lrsegIdIdx)->chunk(0))->Value(i);
             int load_source_id = std::static_pointer_cast<arrow::Int32Array>(table->column(loadSourceIdIdx)->chunk(0))->Value(i);
             int animal_id = std::static_pointer_cast<arrow::Int32Array>(table->column(animalIdIdx)->chunk(0))->Value(i);
