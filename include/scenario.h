@@ -182,9 +182,7 @@ class Scenario {
 
         std::vector<double> sum_load_invalid_;
         std::vector<double> sum_load_valid_;
-        double normalize_efficiency(const std::vector<double>& x, 
-    std::unordered_map<std::string, std::vector<std::vector<double>>> ef_x
-        ); 
+        double normalize_efficiency(const std::vector<double>& x, std::unordered_map<std::string, std::vector<std::vector<double>>> ef_x); 
         double best_land_cost_;
         double best_animal_cost_;
         double best_manure_cost_;

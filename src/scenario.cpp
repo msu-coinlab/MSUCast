@@ -969,11 +969,12 @@ double Scenario::normalize_manure(const std::vector<double>& x, std::vector<std:
             ++counter;
         }
 
+        std::cout << "Grp_tmp Size: " << grp_tmp.size() << std::endl;
         double pct_accum = 0.0;
         for (auto [pct, neighbor_to]: grp_tmp) {
 
             double norm_pct =  (MAX_PCT_MANURE_BMP*pct) / sum;
-            if (norm_pct * manure_dry_lbs_[key] > 1.0) {
+            if (norm_pct * manure_dry_lbs_[key] >= 0.0) { // [TEST!] Putting 0.0 as the threshold for testing
                 double amount = (norm_pct * manure_dry_lbs_[key]);
                 //double moisture = 0.7;
                 //amount = amount / (1.0 - moisture); //convert to wet pounds 
@@ -1442,6 +1443,7 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
 int Scenario::write_manure( const std::vector<std::tuple<int, int, int, int, int, double>>& manure_x,
         const std::string& out_filename) {
     if (manure_x.size() == 0) {
+        std::cout << "manure_x size == 0 " << std::endl; 
         return 0;
     }
 
