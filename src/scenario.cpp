@@ -1579,7 +1579,9 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
             auto county_str = std::to_string(county);
             auto result = std::ranges::find(manure_counties_, county_str);
 
-            std::cout << "Result: " << result << std::endl;
+            if (result != some_vector.end()) {
+                std::cout << "Result: " << *result << std::endl;
+            }            
             std::cout << "stored_manure_dry_lbs > 0.0" << stored_manure_dry_lbs << std::endl;
 
             if(result != manure_counties_.end() && stored_manure_dry_lbs > 0.0) {
