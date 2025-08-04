@@ -478,9 +478,20 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
             exit(-1);
         }
     }
-
+    std::cout << " Before manure_counties_  " <, std::endl;
     std::vector<int> selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
     manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
+    std::cout << " manure_counties_ values ";
+
+    // Print the counties 
+    for (size_t i = 0; i < manure_counties_.size(); ++i) {
+        std::cout << manure_counties_[i];
+        if (i != manure_counties_.size() - 1) {
+            std::cout << ", ";
+        }
+    }
+    std::cout << std::endl;
+
     //manure_counties_ = {"43"};//Lancaster: Nelson
     std::unordered_map<std::string, double> updated_bmp_cost = json_obj_scenario["bmp_cost"].get<std::unordered_map<std::string, double>>();
 
