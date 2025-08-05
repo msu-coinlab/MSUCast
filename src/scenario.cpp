@@ -479,8 +479,15 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
         }
     }
     std::cout << " Before manure_counties_  " << std::endl;
-    std::vector<int> selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
-    manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
+    try {
+        std::vector<int> selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
+        manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to parse 'manure_counties': " << e.what() << std::endl;
+        std::cerr << "Value manure_counties: " << json_obj_scenario["manure_counties"] << std::endl;
+        std::cerr << "Value selected_bmps: " << json_obj_scenario["selected_bmps"] << std::endl;
+        exit(-1);
+    }
     std::cout << " manure_counties_ values ";
 
     // Print the counties 
