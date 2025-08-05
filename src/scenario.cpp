@@ -481,7 +481,7 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
     std::cout << " Before manure_counties_  " << std::endl;
   
     
-    selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
+    std::vector<int> selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
     //manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
 
 
