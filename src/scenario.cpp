@@ -487,7 +487,7 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
     try {
         for (const auto& [state, counties] : json_obj_scenario["manure_counties"].items()) {
             for (const auto& county : counties) {
-                manure_counties_.push_back(std::to_string(county));
+                manure_counties_.push_back(std::to_string(county.get<int>()));
             }
         }
     }catch (const std::exception& e) {
