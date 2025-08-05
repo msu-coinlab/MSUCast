@@ -478,29 +478,17 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
             exit(-1);
         }
     }
-    std::vector<int> selected_bmps;
     std::cout << " Before manure_counties_  " << std::endl;
-    try {
-        if (!json_obj_scenario.contains("selected_bmps") || !json_obj_scenario.contains("manure_counties")) {
-            throw std::runtime_error("Missing required key(s) in JSON.");
+  
+    
+    selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
+    //manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
+
+
+    for (const auto& [state, counties] : json_obj_scenario["manure_counties"]) {
+        for (const auto& countie : counties) {
+            manure_counties_.push_back(std::to_string(countie));
         }
-    
-        selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
-        manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
-    } catch (const std::exception& e) {
-        std::cerr << "Failed to parse JSON fields: " << e.what() << std::endl;
-        
-        if (json_obj_scenario.contains("manure_counties"))
-            std::cerr << "Value manure_counties: " << json_obj_scenario["manure_counties"] << std::endl;
-        else
-            std::cerr << "Key 'manure_counties' not found." << std::endl;
-    
-        if (json_obj_scenario.contains("selected_bmps"))
-            std::cerr << "Value selected_bmps: " << json_obj_scenario["selected_bmps"] << std::endl;
-        else
-            std::cerr << "Key 'selected_bmps' not found." << std::endl;
-    
-        exit(-1);
     }
     
     std::cout << " manure_counties_ values ";
