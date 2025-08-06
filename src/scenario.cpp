@@ -1601,7 +1601,7 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
         std::cout << "In rows for loop " << std::endl;
         int nutrient_id = std::static_pointer_cast<arrow::Int32Array>(table->column(nutrientIdIdx)->chunk(0))->Value(i);
         if (nutrient_id == 1) {
-            std::cout << "nutrient_id ==1" << std::endl;
+            std::cout << "nutrient_id == 1" << std::endl;
             int lrseg_id = std::static_pointer_cast<arrow::Int32Array>(table->column(lrsegIdIdx)->chunk(0))->Value(i);
             int load_source_id = std::static_pointer_cast<arrow::Int32Array>(table->column(loadSourceIdIdx)->chunk(0))->Value(i);
             int animal_id = std::static_pointer_cast<arrow::Int32Array>(table->column(animalIdIdx)->chunk(0))->Value(i);
@@ -1611,11 +1611,19 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
             auto county_str = std::to_string(county);
             auto result = std::ranges::find(manure_counties_, county_str);
 
+
+            std::cout << "county_str: " << county_str << std::endl;
             for (const std::string& county : manure_counties_) {
                 std::cout << " manure_counties_ " << county << std::endl;
             }
-              
-            std::cout << "stored_manure_dry_lbs > 0.0" << stored_manure_dry_lbs << std::endl;
+            if (result != manure_counties_.end()) {
+                std::cout << "Found: " << *result << '\n';
+            }else{
+                std::cout << "Not Found : ";
+            }
+
+
+            std::cout << "stored_manure_dry_lbs > 0.0: " << stored_manure_dry_lbs << std::endl;
 
             if(result != manure_counties_.end() && stored_manure_dry_lbs > 0.0) {
                 auto key = fmt::format("{}_{}_{}", county, load_source_id, animal_id);
