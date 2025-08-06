@@ -1625,7 +1625,9 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
 
             std::cout << "stored_manure_dry_lbs > 0.0: " << stored_manure_dry_lbs << std::endl;
 
-            if(result != manure_counties_.end() && stored_manure_dry_lbs > 0.0) {
+            // if(result != manure_counties_.end() && stored_manure_dry_lbs > 0.0) {
+            // Removed that result check since manure_counties_ is always the nieboring counties 
+            if(stored_manure_dry_lbs > 0.0) {
                 auto key = fmt::format("{}_{}_{}", county, load_source_id, animal_id);
                 manure_dry_lbs[key] += stored_manure_dry_lbs;
                 auto neighbors = neighbors_dict_[county_str]; 
