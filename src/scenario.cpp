@@ -1619,11 +1619,11 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
            
             std::cout << "stored_manure_dry_lbs > 0.0: " << stored_manure_dry_lbs << std::endl;
             try {
-                std::cout << "county: " << county << std::endl;
+                std::cout << "county: " << std::to_string(county) << std::endl;
                 std::cout << "load_source_id: "  << load_source_id << std::endl;
                 std::cout << "animal_id: "  << animal_id << std::endl;
             } catch (const std::exception& e) {
-                std::cerr << "Exception caught: " << e.what() << std::endl;
+                std::cerr << "Exception caught:  " << e.what() << std::endl;
             }
 
             if(stored_manure_dry_lbs > 0.0) {
