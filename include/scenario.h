@@ -189,7 +189,7 @@ class Scenario {
 
         int load_to_opt_;
         void compute_eta();
-        std::vector<std::string> manure_counties_;
+        std::vector<std::string> manure_counties_; // County ID 
         std::unordered_map<std::string, std::vector<int>> manure_all_; 
         std::unordered_map<std::string, double> manure_dry_lbs_;
 

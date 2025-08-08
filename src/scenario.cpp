@@ -117,6 +117,7 @@ void Scenario::init(const std::string& filename, const std::string& filename_sce
 
     if (is_manure_enabled) {
         //manure_counties_ = {"43"};//102: Nelson
+        
 
         
         auto neighbors_file = "/opt/opt4cast/csvs/cast_neighbors.json";
@@ -950,11 +951,11 @@ double Scenario::normalize_animal(const std::vector<double>& x, std::vector<std:
         for (auto [pct, bmp]: grp_tmp) {
             //double norm_pct =  (double) pct / sum;            
             double norm_pct =  (MAX_PCT_ANIMAL_BMP*pct) / sum;
-            std::cout << "Normalize_animal PCT: "<< pct << " Sum: " << sum << std::endl;
-            std::cout << "Norm_pct: " << norm_pct << " Animal_[key]: " << animal_[key] << std::endl;
-            std::cout << "Norm_pct * animal_[key]: " << norm_pct * animal_[key] << std::endl;
+            // std::cout << "Normalize_animal PCT: "<< pct << " Sum: " << sum << std::endl;
+            // std::cout << "Norm_pct: " << norm_pct << " Animal_[key]: " << animal_[key] << std::endl;
+            // std::cout << "Norm_pct * animal_[key]: " << norm_pct * animal_[key] << std::endl;
             if (norm_pct * animal_[key] >= 0.0) { // [TEST!] Putting 0.0 as the threshold for testing
-                std::cout << "Inside Threshold: " << norm_pct * animal_[key] << std::endl;
+                //std::cout << "Inside Threshold: " << norm_pct * animal_[key] << std::endl;
                 double amount = (norm_pct * animal_[key]);
                 auto state = counties_[county];
                 std::string key_bmp_cost = fmt::format("{}_{}", state, bmp);
@@ -1635,7 +1636,7 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
                 for (const std::string& s : manure_counties_) {
                     manure_counties_int.push_back(std::stoi(s));
                 }
-                std::sort(manure_counties_.begin(), manure_counties_.end());
+                std::sort(manure_counties_int.begin(), manure_counties_int.end());
 
                 manure_all_[key] = manure_counties_int;
                 std::cout << "aDD to key manure_all_[key]" << std::endl;
