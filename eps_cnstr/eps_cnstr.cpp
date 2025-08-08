@@ -168,7 +168,12 @@ bool EpsConstraint::constr_eval(double reduction, int nsteps, const std::vector<
         //***** MANURE TRANSPORT *****
         auto parent_manure_path = fmt::format("{}_impbmpsubmittedmanuretransport.parquet", parent_uuid_path);
         auto dst_manure_path = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", exec_path_, uuids[i]);
-        misc_utilities::copy_file(parent_manure_path, dst_manure_path);        
+        misc_utilities::copy_file(parent_manure_path, dst_manure_path);   
+        auto parent_manure_json_path = fmt::format("{}_impbmpsubmittedmanuretransport.json", parent_uuid_path);
+        auto dst_manure_json_path = fmt::format("{}/{}_impbmpsubmittedmanuretransport.json", exec_path_, uuids[i]);
+        misc_utilities::copy_file(parent_manure_json_path, dst_manure_json_path);
+
+
     }
 
     if(evaluate_cast_) {
