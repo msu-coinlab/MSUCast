@@ -1017,7 +1017,7 @@ double Scenario::normalize_manure(const std::vector<double>& x, std::vector<std:
         }
     }
 
-    //std::cout<<"animal_x: "<<animal_x.size()<<std::endl;
+    std::cout<<"manure_x: "<<manure_x.size()<<std::endl;
     return total_cost;
 }
 
