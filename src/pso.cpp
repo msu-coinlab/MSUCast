@@ -523,7 +523,7 @@ std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name)
       result.push_back(std::move(r));
     }
 
-    std::cout << "result size: " << result.size() << std::endl;
+    std::cout << "result size Animal: " << result.size() << std::endl;
 
     return result;
 }
@@ -1133,9 +1133,6 @@ void PSO::exec_ipopt(){
     execute.set_files(exec_uuid_, in_file);
     execute.execute(exec_uuid_, 0.50, 6, 20);
     std::string exec_str = "/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr";
-
-    //OPT4CAST_RUN_EPS_CNSTR_PATH = os.environ.get('OPT4CAST_RUN_EPS_CNSTR_PATH', '/home/gtoscano/projects/MSUCast/build/eps_cnstr/eps_cnstr')
-
 
     std::string in_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/reportloads_processed.json"; 
     std::string out_path = "/opt/opt4cast/output/nsga3/592e98d5-2d52-4d25-99cb-76f88a6d4e09/config/scenario.json";

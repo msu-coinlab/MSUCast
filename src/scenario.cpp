@@ -384,6 +384,7 @@ void Scenario::compute_manure_keys() {
         manure_keys_.push_back(pair.first);
     }
     std::sort(manure_keys_.begin(), manure_keys_.end());
+    std::cout << "Manure_keys_ size: " << manure_keys_.size() << std::endl;
 }
 
 void Scenario::load_neighbors(const std::string& filename) {
@@ -979,6 +980,7 @@ double Scenario::normalize_manure(const std::vector<double>& x, std::vector<std:
     auto bmp = 31; //manure transport
     //std::vector<std::string> lc_altered_keys;
     
+    std::cout << "Normalize_manure Manure_keys_:  " << manure_keys_.size() << std::endl;
     for (const std::string& key : manure_keys_) {
         std::vector<int> neighbors =  manure_all_[key];
 
@@ -992,6 +994,7 @@ double Scenario::normalize_manure(const std::vector<double>& x, std::vector<std:
         ++counter; //to take into account the dummy bmp
 
         for (int neighbor_to: neighbors) {
+            std::cout << "normlize manure neighbor_to: " << neighbor_to << std::endl;
             grp_tmp.push_back({x[counter], neighbor_to});
             sum += x[counter];
             ++counter;
@@ -1638,9 +1641,32 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
                 }
                 std::sort(manure_counties_int.begin(), manure_counties_int.end());
 
+                // Print the info for manure_all_[key]
                 manure_all_[key] = manure_counties_int;
-                std::cout << "aDD to key manure_all_[key]" << std::endl;
-            }
+                std::cout << "Key manure_all_[key]: " << key << std::endl;
+                std::cout << "Manure_counties_int: " << std::endl;   
+                for (int county : manure_counties_int) {
+                    std::cout << county << std::endl;
+                }
+
+                // Just see what would happen if using neighbors_dict_
+                try {
+                    auto neighbors = neighbors_dict_[county_str]; 
+                    std::sort(neighbors.begin(), neighbors.end());
+                    
+                    std::cout << "Neighbors for county " << county_str << ": ";
+                    for (size_t i = 0; i < neighbors.size(); ++i) {
+                        std::cout << neighbors[i];
+                        if (i != neighbors.size() - 1) {
+                            std::cout << ",";
+                        }
+                    }
+                    std::cout << std::endl;
+                
+                } catch (const std::exception& e) {
+                    std::cout << "Error thrown in Neighbors: " << e.what() << std::endl;
+                }
+            } 
  
 
             // if(result != manure_counties_.end() && stored_manure_dry_lbs > 0.0) {
