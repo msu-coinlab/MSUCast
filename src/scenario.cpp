@@ -1633,21 +1633,31 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
             if(stored_manure_dry_lbs > 0.0) {
                 auto key = fmt::format("{}_{}_{}", county, load_source_id, animal_id);
                 manure_dry_lbs[key] += stored_manure_dry_lbs;
-                
-                // Make manure_counties_ a vector of ints
-                std::vector<int> manure_counties_int ;
-                for (const std::string& s : manure_counties_) {
-                    manure_counties_int.push_back(std::stoi(s));
-                }
-                std::sort(manure_counties_int.begin(), manure_counties_int.end());
 
-                // Print the info for manure_all_[key]
-                manure_all_[key] = manure_counties_int;
-                std::cout << "Key manure_all_[key]: " << key << std::endl;
-                std::cout << "Manure_counties_int: " << std::endl;   
-                for (int county : manure_counties_int) {
-                    std::cout << county << std::endl;
-                }
+
+
+                // What I need to do make it work with just the neboring counties first 
+                // Then pass in my values for the counties since rn it just doing the current values 
+
+                auto neighbors = neighbors_dict_[county_str]; 
+                std::sort(neighbors.begin(), neighbors.end());
+                manure_all_[key] = neighbors; 
+
+
+                // Make manure_counties_ a vector of ints
+                // std::vector<int> manure_counties_int ;
+                // for (const std::string& s : manure_counties_) {
+                //     manure_counties_int.push_back(std::stoi(s));
+                // }
+                // std::sort(manure_counties_int.begin(), manure_counties_int.end());
+
+                // // Print the info for manure_all_[key]
+                // manure_all_[key] = manure_counties_int;
+                // std::cout << "Key manure_all_[key]: " << key << std::endl;
+                // std::cout << "Manure_counties_int: " << std::endl;   
+                // for (int county : manure_counties_int) {
+                //     std::cout << county << std::endl;
+                // }
 
                 // Just see what would happen if using neighbors_dict_
                 try {
