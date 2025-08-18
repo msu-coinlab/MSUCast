@@ -488,7 +488,7 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
     //manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
     
     select_neigbors_ = json_obj_scenario["selected_manure_counties"].get<std::vector<int>>();
-    for (int id : select_neighbors_) {
+    for (int id : select_neigbors_) {
         std::cout << id;
     }
     std::cout << std::endl;
