@@ -119,11 +119,12 @@ void Scenario::init(const std::string& filename, const std::string& filename_sce
         //manure_counties_ = {"43"};//102: Nelson
         
 
-        
+        // This loads all the neighboring counties 
         auto neighbors_file = "/opt/opt4cast/csvs/cast_neighbors.json";
         load_neighbors(neighbors_file);
+
         manure_dry_lbs_ = read_manure_nutrients(manure_nutrients_file); //call it after load_neighbors
-                                                                        //
+                                                                        
                                                                         
         //print manure_dry_lbs_
         fmt::print("Manure Dry Lbs:\n");
@@ -485,6 +486,13 @@ void Scenario::load(const std::string& filename, const std::string& filename_sce
     
     std::vector<int> selected_bmps = json_obj_scenario["selected_bmps"].get<std::vector<int>>();
     //manure_counties_ = json_obj_scenario["manure_counties"].get<std::vector<std::string>>();
+    
+    select_neigbors_ = json_obj_scenario["selected_manure_counties"].get<std::vector<int>>();
+    for (int id : select_neighbors_) {
+        std::cout << id;
+    }
+    std::cout << std::endl;
+
 
     try {
         for (const auto& [state, counties] : json_obj_scenario["manure_counties"].items()) {
@@ -1636,13 +1644,13 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
 
 
 
-                // What I need to do make it work with just the neboring counties first 
+                // What I need to do make it work with just the neboring counties first  Done 
                 // Then pass in my values for the counties since rn it just doing the current values 
 
                 auto neighbors = neighbors_dict_[county_str]; 
                 std::sort(neighbors.begin(), neighbors.end());
-                manure_all_[key] = neighbors; 
-
+                //manure_all_[key] = neighbors; 
+                manure_all_[key] = select_neigbors_; 
 
                 // Make manure_counties_ a vector of ints
                 // std::vector<int> manure_counties_int ;

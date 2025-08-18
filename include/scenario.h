@@ -173,7 +173,7 @@ class Scenario {
         //double inject_lc_x();
         //
         std::unordered_map<std::string, std::vector<int>> neighbors_dict_;
-
+        std::vector<int> select_neigbors_; 
         std::unordered_map<std::string, std::vector<double>> eta_dict_;
         std::unordered_map<std::string, std::vector<double>> phi_dict_;
         std::unordered_map<std::string, std::vector<std::vector<double>>> ef_x_;
