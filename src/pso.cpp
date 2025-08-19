@@ -1398,8 +1398,7 @@ void PSO::evaluate() {
 
             particles[i].set_manure_x(manure_x);
             auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", exec_path, exec_uuid);
-            // Add the write Manure to this 
-            scenario_.write_manure(manure_x, manure_filename);
+            scenario_.write_manure(manure_x, manure_filename, base_manure_bmp_inputs_);
             if (!std::filesystem::exists(manure_filename)) {
                 total_cost = 9999999999999.99;
                 particles[i].set_manure_cost(manure_cost);

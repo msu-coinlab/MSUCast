@@ -58,7 +58,7 @@ struct BmpRowManure {
     bool            IsValid;
     std::string     ErrorMessage;
     int32_t         RowIndex;
-  }
+};
 
 
 class Scenario {
@@ -118,8 +118,8 @@ class Scenario {
         double normalize_animal(const std::vector<double>& x, std::vector<std::tuple<int, int, int, int, int, double>>& animal_x); 
         double normalize_manure(const std::vector<double>& x, std::vector<std::tuple<int, int, int, int, int, double>>& manure_x); 
         int write_land(const std::vector<std::tuple<int, int, int, int, double>>& lc_x,const std::string& out_filename,std::vector<BmpRowLand> base_land_bmp_input );
-        int write_animal ( const std::vector<std::tuple<int, int, int, int, int, double>>& animal_x, const std::string& out_filename, std::vector<BmpRowAnimal> base_animal_bmp_inputs);
-        int write_manure ( const std::vector<std::tuple<int, int, int, int, int, double>>& manure_x, const std::string& out_filename);
+        int write_animal(const std::vector<std::tuple<int, int, int, int, int, double>>& animal_x, const std::string& out_filename, std::vector<BmpRowAnimal> base_animal_bmp_inputs);
+        int write_manure(const std::vector<std::tuple<int, int, int, int, int, double>>& manure_x, const std::string& out_filename,const std::vector<BmpRowManure> base_manure_bmp_inputs);
         std::vector<std::string> send_files(const std::string& emo_uuid, const std::vector<std::string>& exec_uuid_vec);
         size_t write_land_json( const std::vector<std::tuple<int, int, int, int, double>>& lc_x, const std::string& out_filename);
         size_t write_animal_json(const std::vector<std::tuple<int, int, int, int, int, double>>& animal_x , const std::string& out_filename);

@@ -1385,7 +1385,7 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
 
     // This adds the base animal bmps 
     int counter = 0;
-    double total_cost = 0.0; // Don't think it is running anything
+    double total_cost = 0.0; 
     for(auto bmp : base_animal_bmp_inputs){
         const auto& [
         BmpSubmittedId,
@@ -1479,114 +1479,146 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
     return counter;
 }
 
-int Scenario::write_manure( const std::vector<std::tuple<int, int, int, int, int, double>>& manure_x,
-        const std::string& out_filename) {
-    if (manure_x.size() == 0) {
-        std::cout << "manure_x size == 0 " << std::endl; 
+int Scenario::write_manure(const std::vector<std::tuple<int, int, int, int, int, double>> manure_x,const std::string& out_filename,const std::vector<BmpRowManure> base_manure_bmp_inputs) {
+
+    if (manure_x.size() == 0 && base_manure_bmp_inputs.size() == 0) {
+        std::cout << "manure inputs are empty" << std::endl;
         return 0;
     }
 
-
     parquet::schema::NodeVector fields;
 
+    fields.push_back(parquet::schema::PrimitiveNode::Make("BmpSubmittedId",parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("BmpId", parquet::Repetition::REQUIRED, parquet::Type::INT32,parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("AgencyId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("StateUniqueIdentifier", parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY, parquet::ConvertedType::UTF8));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("StateId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32));
 
-    //BmpSubmittedId	BmpId	AgencyId	StateUniqueIdentifier	StateId	HasStateReference	CountyIdFrom	CountyIdTo	FipsFrom	FipsTo	AnimalGroupId	LoadSourceGroupId	UnitId	Amount	IsValid	ErrorMessage	RowIndex
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "BmpSubmittedId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "BmpId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "AgencyId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "StateUniqueIdentifier", parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY, parquet::ConvertedType::UTF8
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "StateId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("HasStateReference",parquet::Repetition::REQUIRED, parquet::Type::BOOLEAN));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("CountyIdFrom", parquet::Repetition::REQUIRED, parquet::Type::INT32,parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("CountyIdTo",parquet::Repetition::REQUIRED, parquet::Type::INT32,parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("FipsFrom",parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY,parquet::ConvertedType::UTF8));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("FipsTo", parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY,parquet::ConvertedType::UTF8));
 
-    ///////////////////////////////////////
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "HasStateReference", parquet::Repetition::REQUIRED, parquet::Type::BOOLEAN
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "CountyIdFrom", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "CountyIdTo", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "FipsFrom", parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY, parquet::ConvertedType::UTF8
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "FipsTo", parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY, parquet::ConvertedType::UTF8
-    ));
-    ///////////////////////////////////////
+    fields.push_back(parquet::schema::PrimitiveNode::Make("AnimalGroupId",parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("LoadSourceGroupId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("UnitId",parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("Amount", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("IsValid", parquet::Repetition::REQUIRED, parquet::Type::BOOLEAN));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("ErrorMessage", parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY,parquet::ConvertedType::UTF8));
+    fields.push_back(parquet::schema::PrimitiveNode::Make("RowIndex", parquet::Repetition::REQUIRED, parquet::Type::INT32,parquet::ConvertedType::INT_32));
 
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "AnimalGroupId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "LoadSourceGroupId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "UnitId", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "Amount", parquet::Repetition::REQUIRED, parquet::Type::DOUBLE
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "IsValid", parquet::Repetition::REQUIRED, parquet::Type::BOOLEAN
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "ErrorMessage", parquet::Repetition::REQUIRED, parquet::Type::BYTE_ARRAY, parquet::ConvertedType::UTF8
-    ));
-    fields.push_back(parquet::schema::PrimitiveNode::Make(
-            "RowIndex", parquet::Repetition::REQUIRED, parquet::Type::INT32, parquet::ConvertedType::INT_32
-    ));
     std::shared_ptr<arrow::io::FileOutputStream> outfile;
+    std::shared_ptr<arrow::io::FileOutputStream> new_bmps_outfile;
 
-    PARQUET_ASSIGN_OR_THROW(
-            outfile,
-            arrow::io::FileOutputStream::Open(out_filename));
+    std::string new_bmps_out_filename = out_filename;
+    auto pos = new_bmps_out_filename.rfind(".parquet");
+    if (pos != std::string::npos) {
+        new_bmps_out_filename.insert(pos, "_new_bmps");
+    } else {
+        new_bmps_out_filename += "_new_bmps";
+    }
 
-    std::shared_ptr<parquet::schema::GroupNode> my_schema = std::static_pointer_cast<parquet::schema::GroupNode>(
+    PARQUET_ASSIGN_OR_THROW(outfile, arrow::io::FileOutputStream::Open(out_filename));
+    PARQUET_ASSIGN_OR_THROW(new_bmps_outfile, arrow::io::FileOutputStream::Open(new_bmps_out_filename));
+
+    std::shared_ptr<parquet::schema::GroupNode> my_schema =
+        std::static_pointer_cast<parquet::schema::GroupNode>(
             parquet::schema::GroupNode::Make("schema", parquet::Repetition::REQUIRED, fields));
 
     parquet::WriterProperties::Builder builder;
-    //builder.compression(parquet::Compression::ZSTD);
-    //builder.compression(parquet::Compression::SNAPPY);
     builder.version(parquet::ParquetVersion::PARQUET_1_0);
-    parquet::StreamWriter os{
-            parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build())};
 
+    parquet::StreamWriter os{ parquet::ParquetFileWriter::Open(outfile, my_schema, builder.build()) };
+    parquet::StreamWriter new_bmp_os{ parquet::ParquetFileWriter::Open(new_bmps_outfile, my_schema, builder.build()) };
 
-    int idx = 0;
     int counter = 0;
-    double total_cost = 0.0;
-    for(auto [county_from, county_to, load_src, animal_id, bmp, amount] : manure_x) {
+
+    // Write base manure rows first to the main file only
+    for (const auto& bmp : base_manure_bmp_inputs) {
+        // keep SU pattern and counters consistent with your animal writer
+        std::string su = fmt::format("SU{}", counter);
+
+        os
+            << (counter + 1)
+            << bmp.BmpId
+            << bmp.AgencyId
+            << su
+            << bmp.StateId
+            << bmp.HasStateReference
+            << bmp.CountyIdFrom
+            << bmp.CountyIdTo
+            << bmp.FIPSFrom
+            << bmp.FIPSTo
+            << bmp.AnimalGroupId
+            << bmp.LoadSourceGroupId
+            << bmp.UnitId
+            << bmp.Amount
+            << true
+            << ""
+            << (counter + 1)
+            << parquet::EndRow;
+
+        counter += 1;
+    }
+
+    // Append new manure rows and mirror them to the new_bmps file
+    for (auto [county_from, county_to, load_src, animal_id, bmp_id, amount] : manure_x) {
         auto [geography_from, geography2_id_from, fips_from, county_name_from, state_abbr_from] = geography_county_[county_from];
-        auto [geography_to, geography2_id_to, fips_to, county_name_to, state_abbr_to] = geography_county_[county_to];
-        auto state_from = counties_[county_from];
-        auto state_to = counties_[county_to];
-        //int geography_id = 121; //121: Jefferson
-        int unit_id = 12; //wet tons
+        auto [geography_to, geography2_id_to,fips_to, county_name_to, state_abbr_to] = geography_county_[county_to];
 
-        auto key_bmp_cost= fmt::format("{}_{}", state_from, bmp);
-        double cost = bmp_cost_[key_bmp_cost];
-        total_cost += cost;
-        int agency = 9; //????
-        os<<counter+1<<bmp<<agency<<fmt::format("SU{}",counter)<<state_from<<true<<county_from<<county_to<<fips_from<<fips_to<<animal_id<<u_u_group_dict[load_src]<< unit_id<<amount<<true<<""<<counter+1<<parquet::EndRow;
+        int state_id = counties_[county_from];
+        int unit_id = 12;  // wet tons
+        int agency = 9;   // Non Federal per your animal writer
+        std::string su = fmt::format("SU{}", counter);
 
-        counter++;
+        // main file
+        os
+            << (counter + 1)
+            << bmp_id
+            << agency
+            << su
+            << state_id
+            << true
+            << county_from
+            << county_to
+            << fips_from
+            << fips_to
+            << animal_id
+            << u_u_group_dict[load_src]
+            << unit_id
+            << amount
+            << true
+            << ""
+            << (counter + 1)
+            << parquet::EndRow;
+
+        // only new rows file
+        new_bmp_os
+            << (counter + 1)
+            << bmp_id
+            << agency
+            << su
+            << state_id
+            << true
+            << county_from
+            << county_to
+            << fips_from
+            << fips_to
+            << animal_id
+            << u_u_group_dict[load_src]
+            << unit_id
+            << amount
+            << true
+            << ""
+            << (counter + 1)
+            << parquet::EndRow;
+
+        counter += 1;
     }
 
     return counter;
 }
-
-
 
 std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const std::string& filename) {
 
