@@ -1479,7 +1479,7 @@ int Scenario::write_animal( const std::vector<std::tuple<int, int, int, int, int
     return counter;
 }
 
-int Scenario::write_manure(const std::vector<std::tuple<int, int, int, int, int, double>> manure_x,const std::string& out_filename,const std::vector<BmpRowManure> base_manure_bmp_inputs) {
+int Scenario::write_manure(const std::vector<std::tuple<int, int, int, int, int, double>> manure_x,const std::string& out_filename,    const std::vector<BmpRowManure>& base_manure_bmp_inputs) {
 
     if (manure_x.size() == 0 && base_manure_bmp_inputs.size() == 0) {
         std::cout << "manure inputs are empty" << std::endl;
