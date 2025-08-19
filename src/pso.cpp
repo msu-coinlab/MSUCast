@@ -528,6 +528,104 @@ std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name)
     return result;
 }
 
+std::vector<BmpRowManure> read_parquet_file_manure(const std::string& file_name) {
+    std::cout << "file_name: " << file_name << std::endl;
+    using arrow::default_memory_pool;
+    using parquet::arrow::FileReader;
+
+    std::shared_ptr<arrow::io::ReadableFile> infile;
+    PARQUET_ASSIGN_OR_THROW(
+        infile,
+        arrow::io::ReadableFile::Open(file_name, default_memory_pool())
+    );
+
+    std::unique_ptr<FileReader> reader;
+    PARQUET_THROW_NOT_OK(
+        parquet::arrow::OpenFile(infile, default_memory_pool(), &reader)
+    );
+
+    std::shared_ptr<arrow::Table> table;
+    PARQUET_THROW_NOT_OK(reader->ReadTable(&table));
+
+    int64_t nrows = table->num_rows();
+    if (nrows == 0) return {};
+
+    auto concat_column = [&](int idx) -> std::shared_ptr<arrow::Array> {
+        auto col = table->column(idx);
+        if (col->num_chunks() == 1) return col->chunk(0);
+        std::shared_ptr<arrow::Array> all;
+        PARQUET_ASSIGN_OR_THROW(
+            all,
+            arrow::Concatenate(col->chunks(), default_memory_pool())
+        );
+        return all;
+    };
+
+    // 0  BmpSubmittedId        int32
+    // 1  BmpId                 int32
+    // 2  AgencyId              int32
+    // 3  StateUniqueIdentifier string
+    // 4  StateId               int32
+    // 5  HasStateReference     bool
+    // 6  CountyIdFrom          int32
+    // 7  CountyIdTo            int32
+    // 8  FIPSFrom              string
+    // 9  FIPSTo                string
+    // 10 AnimalGroupId         int32
+    // 11 LoadSourceGroupId     int32
+    // 12 UnitId                int32
+    // 13 Amount                double
+    // 14 IsValid               bool
+    // 15 ErrorMessage          string
+    // 16 RowIndex              int32
+
+    auto a0  = std::static_pointer_cast<arrow::Int32Array>(    concat_column(0));
+    auto a1  = std::static_pointer_cast<arrow::Int32Array>(    concat_column(1));
+    auto a2  = std::static_pointer_cast<arrow::Int32Array>(    concat_column(2));
+    auto a3  = std::static_pointer_cast<arrow::StringArray>(   concat_column(3));
+    auto a4  = std::static_pointer_cast<arrow::Int32Array>(    concat_column(4));
+    auto a5  = std::static_pointer_cast<arrow::BooleanArray>(  concat_column(5));
+    auto a6  = std::static_pointer_cast<arrow::Int32Array>(    concat_column(6));
+    auto a7  = std::static_pointer_cast<arrow::Int32Array>(    concat_column(7));
+    auto a8  = std::static_pointer_cast<arrow::StringArray>(   concat_column(8));
+    auto a9  = std::static_pointer_cast<arrow::StringArray>(   concat_column(9));
+    auto a10 = std::static_pointer_cast<arrow::Int32Array>(    concat_column(10));
+    auto a11 = std::static_pointer_cast<arrow::Int32Array>(    concat_column(11));
+    auto a12 = std::static_pointer_cast<arrow::Int32Array>(    concat_column(12));
+    auto a13 = std::static_pointer_cast<arrow::DoubleArray>(   concat_column(13));
+    auto a14 = std::static_pointer_cast<arrow::BooleanArray>(  concat_column(14));
+    auto a15 = std::static_pointer_cast<arrow::StringArray>(   concat_column(15));
+    auto a16 = std::static_pointer_cast<arrow::Int32Array>(    concat_column(16));
+
+    std::vector<BmpRowManure> result;
+    result.reserve(nrows);
+
+    for (int64_t i = 0; i < nrows; ++i) {
+        BmpRowManure r;
+        r.BmpSubmittedId        = a0->Value(i);
+        r.BmpId                 = a1->Value(i);
+        r.AgencyId              = a2->Value(i);
+        r.StateUniqueIdentifier = a3->GetString(i);
+        r.StateId               = a4->Value(i);
+        r.HasStateReference     = a5->Value(i);
+        r.CountyIdFrom          = a6->Value(i);
+        r.CountyIdTo            = a7->Value(i);
+        r.FIPSFrom              = a8->GetString(i);
+        r.FIPSTo                = a9->GetString(i);
+        r.AnimalGroupId         = a10->Value(i);
+        r.LoadSourceGroupId     = a11->Value(i);
+        r.UnitId                = a12->Value(i);
+        r.Amount                = a13->Value(i);
+        r.IsValid               = a14->Value(i);
+        r.ErrorMessage          = a15->GetString(i);
+        r.RowIndex              = a16->Value(i);
+        result.push_back(std::move(r));
+    }
+
+    std::cout << "result size Manure: " << result.size() << std::endl;
+    return result;
+}
+
 
 std::vector<std::tuple<int, int, int, int, int, double>> read_parquet_file(std::string file_name) {
     using arrow::default_memory_pool;
@@ -638,7 +736,8 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     // unpack the parquet file and store them as vectore tuples 
     base_land_bmp_inputs_ = read_parquet_file_land(base_land_bmp_file);
     base_animal_bmp_inputs_ = read_parquet_file_animal(base_animal_bmp_file);
-    // base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
+    base_manure_bmp_inputs_ = read_parquet_file_manure(base_manure_bmp_file);
+    //base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
 
      // Read in the scecario file to get the constraint
      std::ifstream in(scenario_filename_);
@@ -1299,6 +1398,7 @@ void PSO::evaluate() {
 
             particles[i].set_manure_x(manure_x);
             auto manure_filename = fmt::format("{}/{}_impbmpsubmittedmanuretransport.parquet", exec_path, exec_uuid);
+            // Add the write Manure to this 
             scenario_.write_manure(manure_x, manure_filename);
             if (!std::filesystem::exists(manure_filename)) {
                 total_cost = 9999999999999.99;

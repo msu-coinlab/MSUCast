@@ -1650,7 +1650,17 @@ std::unordered_map<std::string, double> Scenario::read_manure_nutrients(const st
                 auto neighbors = neighbors_dict_[county_str]; 
                 std::sort(neighbors.begin(), neighbors.end());
                 //manure_all_[key] = neighbors; 
-                manure_all_[key] = select_neigbors_; 
+                manure_all_[key] = neighbors; 
+
+                // Print out 'select_neigbors_the selectet countys
+                std::cout << "select_neigbors_: "; 
+                for (size_t i = 0; i < select_neigbors_.size(); ++i) {
+                    std::cout << select_neigbors_[i];
+                    if (i != select_neigbors_.size() - 1) {
+                        std::cout << ",";
+                    }
+                }
+                std::cout << std::endl;
 
                 // Make manure_counties_ a vector of ints
                 // std::vector<int> manure_counties_int ;
