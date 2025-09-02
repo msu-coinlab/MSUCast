@@ -89,12 +89,30 @@ int main (int argc, char *argv[]) {
     std::string base_manure_bmp_file;
     std::string exec_uuid;
     std::string base_scenario_uuid;
+    // TODO remove old code
     // Jefferson.json 
     //./PSOCast Nelson.json an-all 0 0 1
     // ./pso /opt/opt4cast/output/nsga3/2d3661e2-2012-493f-87ef-65b544f14902/config/reportloads_processed.json /opt/opt4cast/output/nsga3/2d3661e2-2012-493f-87ef-65b544f14902/config/scenario.json ./test 1 1 0 0
     //
+
+    /*
+        OPT4CAST_RUN_PSO_PATH,             argv[0]  program path
+        reportloads_json_path,             argv[1]  input_filename
+        scenario_json_path,                argv[2]  scenario_filename
+        pfront_path,                       argv[3]  dir_output
+        str(efficiency_bmps),              argv[4]  is_ef_enabled
+        str(lc_bmps),                      argv[5]  is_lc_enabled
+        str(animal_bmps),                  argv[6]  is_animal_enabled
+        str(manure_transport_bmps),        argv[7]  is_manure_enabled
+        manure_nutrients_path,             argv[8]  manure_nutrients_file
+        land_parquet_file_path,            argv[9]  base_land_bmp_file
+        animal_parquet_file_path,          argv[10] base_animal_bmp_file
+        manure_parquet_file_path,          argv[11] base_manure_bmp_file
+        str(uuid),                         argv[12] exec_uuid
+        str(base_scenario_uuid),           argv[13] base_scenario_uuid
+    */
     if (argc > 1) {
-        input_filename = argv[1];
+        input_filename = argv[1]; 
         scenario_filename = argv[2];
         dir_output = argv[3];
         is_ef_enabled = std::stoi(argv[4]);
@@ -109,7 +127,7 @@ int main (int argc, char *argv[]) {
         base_scenario_uuid = argv[13];
     } 
     
-    // Print stuff to the logs 
+    // Create the running logs forlder that all pring statment got to
     auto  logPath = fmt::format("{}/running.log", dir_output);
     std::freopen(logPath.c_str(), "w", stdout); 
     
@@ -118,6 +136,8 @@ int main (int argc, char *argv[]) {
             manure_nutrients_file, base_land_bmp_file, base_animal_bmp_file, base_manure_bmp_file, exec_uuid, base_scenario_uuid);
     pso.optimize();
     pso.save_gbest(dir_output);
+
+    // TODO Remove old code
     //std::vector<Particle> gbest = pso.get_gbest();
     //save(gbest, "gbest_x_2.txt", "gbest_fx_2.txt" );
     //pso.print();

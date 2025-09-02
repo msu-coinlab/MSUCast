@@ -67,6 +67,22 @@ struct CostData {
 
 // Function to check if one solution dominates another
 bool dominates(const CostData& a, const CostData& b, int num_objectives, double max_budget) {
+   /* 
+    Determines Pareto dominance for minimization with a budget limit.
+
+    Logic
+    First check feasibility with respect to the budget
+    If a is within budget and b is not, a dominates
+    If b is within budget and a is not, a does not dominate
+    If both exceed the budget, prefer the one with lower cost
+
+    If both are within budget, apply standard Pareto dominance
+    For two objectives, a must be no worse in both objectives and strictly better in at least one
+    For three objectives, same rule across all three and requires that both a and b have objective3 set
+
+    If the requested objective count is not supported or a third objective is missing when required, return false
+    */
+
     if(a.objective1<=max_budget && b.objective1>max_budget){
         return true;
     }
@@ -91,8 +107,10 @@ bool dominates(const CostData& a, const CostData& b, int num_objectives, double 
     return false;
 }
 
-// Function to find non-dominated solutions
 std::vector<std::string> find_pareto_front(const std::vector<CostData>& data, int num_objectives,double max_budget) {
+    /*
+        Find the non-domintated soulutions 
+    */
     std::vector<std::string> pareto_front;
 
     for (const auto& current : data) {
@@ -116,6 +134,18 @@ std::vector<std::string> find_pareto_front(const std::vector<CostData>& data, in
 }
 
 std::vector<CostData> readCostFiles(const std::vector<std::string>& objs, const std::string& directory) {
+   /**
+    * @brief Reads cost data from JSON files in a specified directory.
+    *
+    * @param objs A vector of objective names (must contain at least two, 
+    *            optionally three, corresponding to JSON keys).
+    * @param directory Path to the directory containing cost JSON files.
+    *
+    * @return A vector of CostData objects populated with objective values 
+    *         and the file index (derived from the filename prefix before 
+    *         the first underscore).
+    *
+    */
     std::vector<CostData> data;
     int num_objectives = objs.size();
 
@@ -147,7 +177,17 @@ std::vector<CostData> readCostFiles(const std::vector<std::string>& objs, const 
 
 
 std::vector<std::string> findParetoFrontFiles(const std::vector<std::string>& objs, const std::string& directory, double max_budget) {
-
+    /**
+    * @brief Identifies Pareto front files from a set of cost JSON files.
+    *
+    * @param objs A vector of objective names (must contain at least two, 
+    *             optionally three, corresponding to JSON keys).
+    * @param directory Path to the directory containing cost JSON files.
+    * @param max_budget Maximum budget constraint; solutions exceeding this 
+    *                   budget are excluded from the Pareto front.
+    *
+    * @return A vector of filenames (as strings) that lie on the Pareto front.
+    */
     int num_objectives = objs.size();
     std::vector<CostData> data;
     data = readCostFiles(objs, directory);
@@ -155,6 +195,13 @@ std::vector<std::string> findParetoFrontFiles(const std::vector<std::string>& ob
 }
 
 void writeCSV(const std::vector<CostData>& data, const std::string& output_file, const std::vector<std::string>& objs) {
+    /**
+        @brief Write objective values to a CSV file sorted by file_index
+        @param data input records to write
+        @param output_file path to the CSV file to create or overwrite
+        @param objs optional objective names used by the commented header section
+    */
+
     std::vector<CostData> sorted_data = data;
     std::sort(sorted_data.begin(), sorted_data.end(), [](const CostData& a, const CostData& b) {
         return std::stol(a.file_index) < std::stol(b.file_index);
@@ -162,6 +209,7 @@ void writeCSV(const std::vector<CostData>& data, const std::string& output_file,
     std::ofstream csv_file(output_file);
 
 
+    // TODO remove old code
     // Write the header
     //csv_file << "file_index," << objs[0] << "," << objs[1];
     /*
@@ -184,6 +232,8 @@ void writeCSV(const std::vector<CostData>& data, const std::string& output_file,
 
     csv_file.close();
 }
+
+
 /***************************************************************************/
 
 
@@ -358,6 +408,12 @@ namespace {
 
 
 std::vector<BmpRowLand> read_parquet_file_land(const std::string& file_name) {
+    /**
+    @brief Load BmpRowLand rows from a Parquet file using Apache Arrow 
+    @param file_name path to the Parquet file to read
+    @return std::vector<BmpRowLand> one element per row in the file
+    */
+
   // 1) Open file
   arrow::MemoryPool* pool = arrow::default_memory_pool();
   std::shared_ptr<arrow::io::ReadableFile> infile;
@@ -450,6 +506,11 @@ std::vector<BmpRowLand> read_parquet_file_land(const std::string& file_name) {
 }
 
 std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name) {
+    /** 
+        @brief Load BmpRowAnimal rows from a Parquet file using Apache Arrow 
+        @param file_name path to the Parquet file to read
+        @return std::vector<BmpRowAnimal> one element per row in the file
+    */
     std::cout << "file_name: " << file_name << std::endl;
     using arrow::default_memory_pool;
     using parquet::arrow::FileReader;
@@ -529,6 +590,11 @@ std::vector<BmpRowAnimal> read_parquet_file_animal(const std::string& file_name)
 }
 
 std::vector<BmpRowManure> read_parquet_file_manure(const std::string& file_name) {
+    /** 
+        @brief Load BmpRowManure rows from a Parquet file using Apache Arrow 
+        @param file_name path to the Parquet file to read
+        @return std::vector<BmpRowManure> one element per row in the file
+    */
     std::cout << "file_name: " << file_name << std::endl;
     using arrow::default_memory_pool;
     using parquet::arrow::FileReader;
@@ -628,6 +694,12 @@ std::vector<BmpRowManure> read_parquet_file_manure(const std::string& file_name)
 
 
 std::vector<std::tuple<int, int, int, int, int, double>> read_parquet_file(std::string file_name) {
+    /**
+        @brief Read selected columns from a Parquet file into a vector of tuples
+        @param file_name path to the Parquet file
+        @return std::vector<std::tuple<int,int,int,int,int,double>> one tuple per row
+    */
+    
     using arrow::default_memory_pool;
     using parquet::arrow::FileReader;
   
@@ -701,10 +773,36 @@ std::vector<std::tuple<int, int, int, int, int, double>> read_parquet_file(std::
 }
 
 
-// add the file and dont forget the header 
 PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, double lb, double ub, const std::string& input_filename, const std::string& scenario_filename, const std::string& out_dir, bool is_ef_enabled, bool is_lc_enabled, bool is_animal_enabled, bool is_manure_enabled, 
         const std::string& manure_nutrients_file, const std::string& base_land_bmp_file, const std::string& base_animal_bmp_file, const std::string& base_manure_bmp_file, const std::string& exec_uuid, const std::string& base_scenario_uuid) {
-    out_dir_= out_dir;
+    
+    /**
+    * @brief Constructs a Particle Swarm Optimization (PSO) instance and initializes parameters.
+    *
+    * @param nparts Number of particles in the swarm.
+    * @param nobjs Number of objective functions.
+    * @param max_iter Maximum number of iterations to run the optimization.
+    * @param w Inertia weight parameter for velocity update.
+    * @param c1 Cognitive acceleration coefficient.
+    * @param c2 Social acceleration coefficient.
+    * @param lb Lower bound for decision variables.
+    * @param ub Upper bound for decision variables.
+    * @param input_filename Path to the input file containing CAST data.
+    * @param scenario_filename Path to the JSON scenario file with constraints.
+    * @param out_dir Directory path for output files.
+    * @param is_ef_enabled Flag indicating if edge-of-field BMPs are enabled.
+    * @param is_lc_enabled Flag indicating if land cover BMPs are enabled.
+    * @param is_animal_enabled Flag indicating if animal BMPs are enabled.
+    * @param is_manure_enabled Flag indicating if manure BMPs are enabled.
+    * @param manure_nutrients_file Path to the manure nutrients file.
+    * @param base_land_bmp_file Path to baseline land BMP parquet file.
+    * @param base_animal_bmp_file Path to baseline animal BMP parquet file.
+    * @param base_manure_bmp_file Path to baseline manure BMP parquet file.
+    * @param exec_uuid Unique identifier for this optimization execution.
+    * @param base_scenario_uuid Unique identifier for the base scenario.
+    */
+
+     out_dir_= out_dir;
     is_ef_enabled_ = is_ef_enabled;
     is_lc_enabled_ = is_lc_enabled;
     is_animal_enabled_ = is_animal_enabled;
@@ -726,6 +824,8 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     this->c2 = c2;
     this->lower_bound = lb; 
     this->upper_bound = ub; 
+
+    //TODO remove old code 
     //logger_ = spdlog::stdout_color_mt("PSO");
 
     // Store the base file path 
@@ -737,17 +837,21 @@ PSO::PSO(int nparts, int nobjs, int max_iter, double w, double c1, double c2, do
     base_land_bmp_inputs_ = read_parquet_file_land(base_land_bmp_file);
     base_animal_bmp_inputs_ = read_parquet_file_animal(base_animal_bmp_file);
     base_manure_bmp_inputs_ = read_parquet_file_manure(base_manure_bmp_file);
-    //base_manure_bmp_inputs_ = read_parquet_file(base_manure_bmp_file);
 
-     // Read in the scecario file to get the constraint
-     std::ifstream in(scenario_filename_);
-     json scenario;
-     in >> scenario;
-     max_budget_ = (scenario["total_budget"].get<double>() > 0 )  ? scenario["total_budget"].get<double>(): std::numeric_limits<double>::infinity(); 
-     
+    // Read in the scecario file to get the constraint
+    std::ifstream in(scenario_filename_);
+    json scenario;
+    in >> scenario;
+    max_budget_ = (scenario["total_budget"].get<double>() > 0 )  ? scenario["total_budget"].get<double>(): std::numeric_limits<double>::infinity(); 
+    
 }
 
 PSO::PSO(const PSO &p) {
+    /**
+    * @brief Copy constructor for the PSO class.
+    *
+    * @param p The PSO instance to copy from.
+    */
     this->dim = p.dim;
     this->nparts = p.nparts;
     this->nobjs= p.nobjs;
@@ -779,6 +883,11 @@ PSO::PSO(const PSO &p) {
 }
 
 PSO& PSO::operator=(const PSO &p) {
+    /** 
+    @brief Assignment operator for the PSO class. 
+    @param p The PSO instance to assign from.
+    @return Reference to the updated PSO instance (*this).
+    */
 
   // Protect against self-assignment
     if (this == &p) {
@@ -803,9 +912,25 @@ PSO& PSO::operator=(const PSO &p) {
 }
 
 PSO::~PSO() {
+    /**
+    @brief Destructor for the PSO class.
+    */
+    //TODO remove old code
     //delete_tmp_eiles();
 }
+
+
 void PSO::delete_tmp_files(){
+    /**
+    * @brief Deletes temporary output files associated with the current PSO execution.
+    *
+    * Iterates over execution UUIDs recorded in exec_uuid_log_, searches for 
+    * matching files in the PSO output directory, and attempts to remove them. 
+    * Any files that cannot be found or deleted are logged to stdout/stderr.
+    *
+    * @note May not get called 
+    */
+
     int counter = 0;
     std::string directory = fmt::format("/opt/opt4cast/output/nsga3/{}", exec_uuid_);
     for (const auto& exec_uuid_vec : exec_uuid_log_) {
@@ -831,9 +956,17 @@ void PSO::delete_tmp_files(){
 
 
 void PSO::init_cast(const std::string& input_filename, const std::string& scenario_filename, const std::string& manure_nutrients_file) {
+    /**
+    * @brief Initializes CAST scenario data and PSO problem dimensions.
+
+    * @param input_filename Path to the input file containing CAST base data.
+    * @param scenario_filename Path to the scenario JSON file describing constraints and settings.
+    * @param manure_nutrients_file Path to the manure nutrients configuration file.
+    *
+    */
     fmt::print("exec_uuid: {}\n", exec_uuid_);
     std::string exec_path = fmt::format("/opt/opt4cast/output/nsga3/{}/", exec_uuid_);
-    std::unordered_map<std::string, std::tuple<int, double, double , double, double>> generation_fx;//key: UID, tuple: [idx, Nitrogen, Phosphorus, Sediments]
+    std::unordered_map<std::string, std::tuple<int, double, double , double, double>> generation_fx; //key: UID, tuple: [idx, Nitrogen, Phosphorus, Sediments]
     std::unordered_map<std::string, int> generation_uuid_idx;
     misc_utilities::mkdir(exec_path);
 
@@ -852,14 +985,26 @@ void PSO::init_cast(const std::string& input_filename, const std::string& scenar
 }
 
 void PSO::init() {
+    /**
+    * @brief Initializes the particle swarm population for optimization.
+    *
+    * Reserves space for all particles, creates each particle with the defined 
+    * problem dimensions and PSO hyperparameters, and initializes their 
+    * decision vectors using the scenario configuration. Each particle is 
+    * evaluated, its personal best (pbest) is established, and the global 
+    * best (gbest) is updated for the swarm.
+    */
+
     particles.reserve(nparts);
     for (int i = 0; i < nparts; i++) {
         particles.emplace_back(dim, nobjs, w, c1, c2, lower_bound, upper_bound);
 
+        //TODO remove code 
         //std::vector<double > x(lc_size + animal_size);
         auto x = particles[i].get_x();
 
         scenario_.initialize_vector(x);
+        //TODO remove code 
         //particles[i].init();
         particles[i].init(x);
     }
@@ -913,13 +1058,17 @@ std::vector<std::string> PSO::generate_n_uuids(int n) {
     for (int i = 0; i < n; i++) {
         uuids.push_back(xg::newGuid().str());
     }
+    //TODO remove code 
     //json uuids_json;
     //uuids_json["uuids"] = uuids;
     return uuids;
 }
 
 void PSO::copy_parquet_files_for_ipopt(const std::string& path, const std::string& parent_uuid, const std::vector<std::string>& uuids) {
+
+    //May not be called any 
     for (const auto& uuid : uuids) {
+        //TODO remove code
         /*
         auto land_src = fmt::format("{}/{}_impbmpsubmittedland.parquet", path, parent_uuid);
         if(fs::exists(land_src)){
@@ -1071,7 +1220,7 @@ void PSO::exec_ipopt_all_sols(){
                 parent_uuid_path,
                 pollutant_idx, //0
                 ipopt_reduction, //0.30
-                nsteps,//10
+                nsteps, //10
                 1, // Evalute using Cast system
                 parent_uuid_path,
                 path,
@@ -1209,7 +1358,7 @@ void PSO::evaluate_ipopt_sols(const std::string& sub_dir, const std::string& ipo
     fmt::print("end\n");
 }
 
-
+// TODO remove old code
 //std::vector<Particle> gbest_;
 void PSO::exec_ipopt(){
     Execute execute;
@@ -1257,6 +1406,7 @@ void PSO::exec_ipopt(){
 
 }
 
+//TODO remove old code
 /*
 void PSO::update_gbest() {
     for (int j = 0; j < nparts; j++) {
